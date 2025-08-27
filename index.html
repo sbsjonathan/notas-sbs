@@ -4,19 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Texto - Container</title>
+    
+    <!-- CSS principais -->
     <link rel="stylesheet" href="container.css">
-    <link rel="stylesheet" href="barra/barra.css">
+    <link rel="stylesheet" href="barra/barra.css"> <!-- CSS atualizado com sub-containers -->
     <link rel="stylesheet" href="editor/editor.css">
+    
     <!-- CSS dos plugins -->
     <link rel="stylesheet" href="barra/plugin/undo/undo.css">
     <link rel="stylesheet" href="barra/plugin/negrita/negrita.css">
-<link rel="stylesheet" href="barra/plugin/toggle/toggle.css">
+    <link rel="stylesheet" href="barra/plugin/toggle/toggle.css">
+    <link rel="stylesheet" href="barra/plugin/bullet/bullet.css">
+    <link rel="stylesheet" href="barra/plugin/font/font.css">
+    <link rel="stylesheet" href="barra/plugin/cores/cores.css">
 </head>
 <body>
     <div class="main-container">
-        <!-- Prateleira para futuros ícones de edição -->
+        <!-- Prateleira para ícones de edição -->
         <div class="toolbar-shelf" id="toolbar-container">
             <!-- A barra será carregada aqui via JavaScript -->
+            <!-- 
+            Layout final:
+            [1: undo] [2: negrita] [3: bullet|toggle] [4: vazio] [5: font] [6: cores]
+            -->
         </div>
         
         <!-- Área reservada para o editor de texto -->
@@ -25,17 +35,19 @@
         </div>
     </div>
     
-    <!-- Scripts para carregar componentes -->
+    <!-- Scripts principais PRIMEIRO -->
+    <script src="barra/barra.js"></script>        <!-- ToolbarManager atualizado -->
+    <script src="editor/editor.js"></script>
+    
+    <!-- Scripts dos plugins DEPOIS -->
     <script src="barra/plugin/undo/undo.js"></script>
     <script src="barra/plugin/negrita/negrita.js"></script>
-    <script src="barra/plugin/toggle/toggle.js"></script>
-    <script src="barra/plugin/plugin/toggle.js"></script>
-    <script src="barra/barra.js"></script>
-    <script src="editor/editor.js"></script>
-
-
-<script src="//cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-
+    
+    <!-- NOVOS: Plugins que vão para sub-slots -->
+    <script src="barra/plugin/toggle/toggle.js"></script>  <!-- Vai para 3-right -->
+    <script src="barra/plugin/bullet/bullet.js"></script>   <!-- Vai para 3-left -->
+    
+    <script src="barra/plugin/font/font.js"></script>
+    <script src="barra/plugin/cores/cores.js"></script>
 </body>
 </html>
