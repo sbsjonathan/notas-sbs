@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Texto - Container</title>
+    
+    <!-- CSS principais -->
+    <link rel="stylesheet" href="container.css">
+    <link rel="stylesheet" href="barra/barra.css">
+    <link rel="stylesheet" href="editor/editor.css">
+    
+    <!-- CSS dos plugins -->
+    <link rel="stylesheet" href="barra/plugin/undo/undo.css">
+    <link rel="stylesheet" href="barra/plugin/negrita/negrita.css">
+    <link rel="stylesheet" href="barra/plugin/toggle/toggle.css">
+    <link rel="stylesheet" href="barra/plugin/bullet/bullet.css">
+    <link rel="stylesheet" href="barra/plugin/font/font.css">
+    <link rel="stylesheet" href="barra/plugin/cores/cores.css">
+    
+    <!-- Navbar unificada -->
+    <link rel="stylesheet" href="../navbar/navbar-unified.css">
+    
+    <style>
+        /* Indicador de semana no cabeçalho */
+        .semana-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #3F3C6D;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        /* Status do auto-save */
+        .save-status {
+            position: fixed;
+            bottom: 100px;
+            right: 10px;
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .save-status.show {
+            opacity: 1;
+        }
+        
+        .save-status.saving {
+            background: #ffc107;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Indicador da semana atual -->
+    <div class="semana-indicator" id="semana-indicator">
+        Carregando...
+    </div>
+    
+    <!-- Status do auto-save -->
+    <div class="save-status" id="save-status">
+        Salvo automaticamente
+    </div>
+    
+    <div class="main-container">
+        <!-- Prateleira para ícones de edição -->
+        <div class="toolbar-shelf" id="toolbar-container">
+            <!-- A barra será carregada aqui via JavaScript -->
+        </div>
+        
+        <!-- Área reservada para o editor de texto -->
+        <div class="editor-area">
+            <!-- O editor será carregada aqui via JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Scripts originais -->
+    <script src="cache-r.js"></script>
+    <script src="barra/barra.js"></script>
+    <script src="editor/editor.js"></script>
+    <script src="barra/plugin/undo/undo.js"></script>
+    <script src="barra/plugin/negrita/negrita.js"></script>
+    <script src="barra/plugin/toggle/toggle.js"></script>
+    <script src="barra/plugin/bullet/bullet.js"></script>
+    <script src="barra/plugin/font/font.js"></script>
+    <script src="barra/plugin/cores/cores.js"></script>
+    
+    <!-- Sistema de sincronização -->
+<script src="../save/config.js"></script>
+<script src="../save/supabase.js"></script>
+<script src="../save/sync.js"></script>
+    
+    <!-- Navbar unificada -->
+    <script src="../navbar/navbar-unified.js"></script>
+    
+    <script>
+        // Atualiza indicador de semana
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const semana = urlParams.get('semana');
+            
+            if (semana) {
+                document.getElementById('semana-indicator').textContent = `Semana: ${semana}`;
+                window.semanaAtual = semana;
+            } else {
+                document.getElementById('semana-indicator').textContent = 'Sem semana definida';
+            }
+        });
+    </script>
+</body>
+</html>

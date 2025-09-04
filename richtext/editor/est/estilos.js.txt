@@ -1,0 +1,134 @@
+// anotacoes/fullsc/estilos/estilos.js
+(async function() {
+  // --- Bloco 1: Verificação de Dependência ---
+  if (!window.FullscreenModal) {
+    console.error("Estilos.js: FullscreenModal não foi encontrado. Este script precisa que fullsc-modal.js carregue primeiro.");
+    return;
+  }
+
+  // --- Bloco 2: Preparação do Ambiente ---
+  const toolbar = window.FullscreenModal.getToolbar();
+  const editor = window.FullscreenModal.getEditor();
+  if (!toolbar || !editor) {
+    console.error("Estilos.js: Toolbar ou Editor não foram encontrados na API do FullscreenModal.");
+    return;
+  }
+
+  try {
+    const response = await fetch('anotacoes/fullsc/estilos/estilos.html');
+    if (!response.ok) throw new Error('Falha ao carregar estilos.html');
+    toolbar.insertAdjacentHTML('afterbegin', await response.text());
+  } catch (error) {
+    console.error('Erro ao carregar o HTML da barra de ferramentas de estilos:', error);
+    return;
+  }
+
+  // --- Bloco 3: Mapeamento dos Elementos ---
+  const foreColorInput = toolbar.querySelector('#fore-color-input');
+  const backColorInput = toolbar.querySelector('#back-color-input');
+  const foreColorIndicator = toolbar.querySelector('#fore-color-indicator');
+  const backColorIndicator = toolbar.querySelector('#back-color-indicator');
+  const resetBtn = toolbar.querySelector('#remove-format-btn');
+  const resetIndicator = toolbar.querySelector('#reset-color-indicator');
+  
+  const DEFAULT_FORE_COLOR = '#000000';
+  const DEFAULT_BACK_COLOR = '#ffffff';
+  
+  // Variável para controlar o timer de seleção de cor.
+  let colorSelectionTimer = null;
+
+  // --- Bloco 4: Funções de Lógica e Atualização ---
+
+  function isLightColor(color) {
+    if (!color || color.length < 7) return true;
+    const r = parseInt(color.substr(1, 2), 16);
+    const g = parseInt(color.substr(3, 2), 16);
+    const b = parseInt(color.substr(5, 2), 16);
+    return ((r * 299) + (g * 587) + (b * 114)) / 1000 > 155;
+  }
+
+  // Esta função agora é a única fonte da verdade para o estado dos botões.
+  function updateToolbarState() {
+    const boldButton = toolbar.querySelector('.toolbar-btn[data-command="bold"]');
+    const italicButton = toolbar.querySelector('.toolbar-btn[data-command="italic"]');
+    
+    // Usa o estado real do documento para definir se o botão está ativo
+    if (boldButton) {
+      boldButton.classList.toggle('active', document.queryCommandState('bold'));
+    }
+    if (italicButton) {
+      italicButton.classList.toggle('active', document.queryCommandState('italic'));
+    }
+  }
+
+  // --- Bloco 5: Lógica de Eventos ---
+
+  // Eventos para botões de comando simples (Bold, Italic, etc.)
+  toolbar.querySelectorAll('.toolbar-btn[data-command]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const command = e.currentTarget.dataset.command;
+      document.execCommand(command, false, null);
+      
+      // Imediatamente após executar o comando, atualiza a barra de ferramentas
+      // para refletir a mudança de estado no documento.
+      updateToolbarState(); 
+      editor.focus(); 
+    });
+  });
+
+  // Evento para o seletor de cor de texto
+  foreColorInput.addEventListener('input', (e) => {
+    clearTimeout(colorSelectionTimer);
+    document.execCommand('foreColor', false, e.target.value);
+    foreColorIndicator.style.color = e.target.value;
+    resetIndicator.style.color = e.target.value;
+
+    colorSelectionTimer = setTimeout(() => {
+      editor.focus();
+    }, 400); 
+  });
+
+  // Evento para o seletor de cor de fundo
+  backColorInput.addEventListener('input', (e) => {
+    clearTimeout(colorSelectionTimer);
+    document.execCommand('hiliteColor', false, e.target.value);
+    backColorIndicator.style.backgroundColor = e.target.value;
+    backColorIndicator.style.color = isLightColor(e.target.value) ? '#000' : '#fff';
+    resetIndicator.style.backgroundColor = e.target.value;
+
+    colorSelectionTimer = setTimeout(() => {
+      editor.focus();
+    }, 400);
+  });
+  
+  // Evento para o botão de resetar formatação
+  resetBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.execCommand('removeFormat', false, null);
+    document.execCommand('foreColor', false, DEFAULT_FORE_COLOR);
+    document.execCommand('hiliteColor', false, DEFAULT_BACK_COLOR);
+    
+    foreColorIndicator.style.color = '#ff0000';
+    backColorIndicator.style.backgroundColor = '#ffff00';
+    backColorIndicator.style.color = '#000';
+    resetIndicator.style.color = DEFAULT_FORE_COLOR;
+    resetIndicator.style.backgroundColor = 'transparent';
+    resetIndicator.classList.add('shake');
+    setTimeout(() => resetIndicator.classList.remove('shake'), 500);
+
+    updateToolbarState();
+    editor.focus();
+  });
+
+  // --- Bloco 6: Sincronização de Estado ---
+
+  // O estado precisa ser atualizado na interação do usuário com o texto
+  editor.addEventListener('keyup', updateToolbarState); // Mudanças via teclado (setas)
+  editor.addEventListener('mouseup', updateToolbarState); // Mudanças via clique do mouse/toque
+  editor.addEventListener('focus', updateToolbarState); // Garante o estado correto ao focar no editor
+
+  // Quando o modal abre, chama a função de atualização para ler o estado inicial do cursor.
+  document.addEventListener('fullscreenOpened', updateToolbarState);
+
+})();
