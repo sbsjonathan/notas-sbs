@@ -1,0 +1,219 @@
+// agente-modal.js — long-press (3s) no número da pergunta abre um modal de IA
+// Usa a MESMA API/config do agente-obj (gemini-2.0-flash-exp)
+(function () {
+  const GEMINI_MODEL   = 'gemini-2.0-flash-exp';
+  const GEMINI_ENDPOINT= `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const API_KEY        = 'AIzaSyANZlDe64BqLPM8ByCNyaz9KecnTgRwEPc'; // mesmo do agente-obj
+
+  // ------ util: cria modal (uma vez) ------
+  function ensureModal() {
+    if (document.getElementById('modal-agente')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'modal-agente';
+    overlay.innerHTML = `
+      <div class="modal-agente-content" role="dialog" aria-modal="true" aria-labelledby="agente-titulo">
+        <div class="modal-agente-fechar" id="agente-fechar" aria-label="Fechar">×</div>
+        <div class="agente-modal-header">
+          <h3 class="agente-modal-titulo" id="agente-titulo">Agente (IA)</h3>
+        </div>
+        <div class="agente-modal-body">
+          <textarea id="agente-pergunta" placeholder="Pergunte algo sobre este artigo..."></textarea>
+          <div class="agente-controles">
+            <button id="agente-enviar" class="agente-btn agente-btn--primario">✨ Gerar Resposta</button>
+            <button id="agente-reset" class="agente-btn" title="Limpar pergunta e resposta">Reset</button>
+            <div class="agente-status" id="agente-status"></div>
+          </div>
+          <div id="agente-resposta" aria-live="polite"></div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Fecha ao clicar fora/fechar
+    const fechar = () => closeModal();
+    overlay.addEventListener('click', (e) => { if (e.target.id === 'modal-agente') fechar(); });
+    overlay.querySelector('#agente-fechar').addEventListener('click', fechar);
+  }
+
+  function openModal(contextoTitulo) {
+    ensureModal();
+    const overlay = document.getElementById('modal-agente');
+    const titulo  = overlay.querySelector('#agente-titulo');
+    titulo.textContent = contextoTitulo ? `Agente (IA) — ${contextoTitulo}` : 'Agente (IA)';
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => overlay.querySelector('#agente-pergunta')?.focus(), 50);
+  }
+
+  function closeModal() {
+    const overlay = document.getElementById('modal-agente');
+    if (!overlay) return;
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // ------ coleta texto do ARTIGO (prioridade) ------
+  function extrairTextoArtigo() {
+    const paragrafos = Array.from(document.querySelectorAll('.paragrafo'));
+    if (!paragrafos.length) return '';
+    const juntar = paragrafos.map(p => {
+      // clone p/ limpar .bbl
+      const c = p.cloneNode(true);
+      c.querySelectorAll('a.bbl').forEach(a => a.replaceWith(a.textContent));
+      // remove numeração inicial (span)
+      const s = c.querySelector('span');
+      if (s) s.remove();
+      return c.textContent.replace(/\s+/g, ' ').trim();
+    });
+    return juntar.join('\n\n').trim();
+  }
+
+  // ------ chamada IA ------
+  async function gerarRespostaIA(pergunta, artigoTexto) {
+    const sistemaInstrucao = `
+Você é um assistente que ajuda a estudar artigos bíblicos.
+PRIORIZE responder com base no ARTIGO fornecido a seguir. 
+Se a informação não estiver no artigo, responda brevemente com seu conhecimento geral, sem inventar.
+
+Responda em português, de forma direta, clara e respeitosa (3–6 frases).
+Se o artigo contiver a informação exata, use palavras do artigo quando fizer sentido.
+Se citar um texto bíblico, basta mencionar a referência (sem link).
+
+=== ARTIGO (BASE PRIORITÁRIA) ===
+${artigoTexto || '[vazio]'}
+=== FIM DO ARTIGO ===
+
+PERGUNTA DO USUÁRIO:
+${pergunta}
+`.trim();
+
+    const body = {
+      contents: [{ parts: [{ text: sistemaInstrucao }] }],
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 512
+      }
+    };
+
+    const resp = await fetch(GEMINI_ENDPOINT + `?key=${encodeURIComponent(API_KEY)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) {
+      let msg = `HTTP ${resp.status}`;
+      try { msg = (await resp.json())?.error?.message || msg; } catch {}
+      throw new Error(msg);
+    }
+    const raw = await resp.json();
+    const txt = raw?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return txt.trim();
+  }
+
+  // ------ binds de long-press (3s) no <span> do número ------
+  function setupLongPress() {
+    const spans = Array.from(document.querySelectorAll('p.pergunta > span'));
+    spans.forEach((sp) => {
+      if (sp.dataset.agenteModalBound === '1') return;
+      sp.dataset.agenteModalBound = '1';
+
+      let timer = null, moved = false, startX = 0, startY = 0;
+
+      const start = (clientX, clientY) => {
+        moved = false;
+        startX = clientX; startY = clientY;
+        sp.classList.add('pergunta-num', 'agente-press');
+        timer = setTimeout(() => {
+          sp.classList.remove('agente-press');
+          const spanTxt = (sp.textContent || '').trim();
+          openModal(`§${spanTxt.replace(/\.$/, '')}`);
+        }, 3000); // 3s
+      };
+
+      const cancel = () => {
+        if (timer) clearTimeout(timer);
+        timer = null;
+        sp.classList.remove('agente-press');
+      };
+
+      // touch
+      sp.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) return;
+        const t = e.touches[0];
+        start(t.clientX, t.clientY);
+      }, { passive: true });
+
+      sp.addEventListener('touchmove', (e) => {
+        const t = e.touches[0];
+        if (Math.abs(t.clientX - startX) > 10 || Math.abs(t.clientY - startY) > 10) {
+          moved = true; cancel();
+        }
+      }, { passive: true });
+
+      sp.addEventListener('touchend', cancel, { passive: true });
+      sp.addEventListener('touchcancel', cancel, { passive: true });
+
+      // mouse (apenas p/ testes desktop)
+      sp.addEventListener('mousedown', (e) => { start(e.clientX, e.clientY); });
+      sp.addEventListener('mousemove', () => { if (timer) cancel(); });
+      sp.addEventListener('mouseup', cancel);
+      sp.addEventListener('mouseleave', cancel);
+
+      // evita menu de contexto atrapalhar iOS
+      sp.addEventListener('contextmenu', (e) => e.preventDefault());
+    });
+  }
+
+  // ------ actions dos botões dentro do modal ------
+  function wireModalActions() {
+    ensureModal();
+    const overlay  = document.getElementById('modal-agente');
+    const btnSend  = overlay.querySelector('#agente-enviar');
+    const btnReset = overlay.querySelector('#agente-reset');
+    const areaQ    = overlay.querySelector('#agente-pergunta');
+    const areaR    = overlay.querySelector('#agente-resposta');
+    const status   = overlay.querySelector('#agente-status');
+
+    const send = async () => {
+      const pergunta = (areaQ.value || '').trim();
+      if (!pergunta) { areaQ.focus(); return; }
+      const artigo = extrairTextoArtigo();
+      btnSend.disabled = true; btnReset.disabled = true;
+      status.textContent = 'Gerando resposta...';
+      areaR.textContent = '';
+
+      try {
+        const texto = await gerarRespostaIA(pergunta, artigo);
+        areaR.textContent = texto || '❌ Resposta não gerada.';
+      } catch (err) {
+        areaR.textContent = `❌ Erro: ${err.message}`;
+      } finally {
+        btnSend.disabled = false; btnReset.disabled = false;
+        status.textContent = '';
+      }
+    };
+
+    btnSend.onclick = send;
+    btnReset.onclick = () => { areaQ.value = ''; areaR.textContent = ''; areaQ.focus(); };
+  }
+
+  // ------ bootstrap ------
+  function boot() {
+    ensureModal();
+    setupLongPress();
+    wireModalActions();
+  }
+
+  // roda após DOM pronto e também com um leve atraso (p/ quando clickable.js reorganiza DOM)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { boot(); setTimeout(setupLongPress, 600); });
+  } else {
+    boot(); setTimeout(setupLongPress, 600);
+  }
+
+  // se seu app disparar eventos personalizados, podemos reforçar:
+  window.addEventListener('load', () => setTimeout(setupLongPress, 1200));
+})();

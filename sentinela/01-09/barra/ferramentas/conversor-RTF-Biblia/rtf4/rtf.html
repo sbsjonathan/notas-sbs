@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Processador RTF para JSON</title>
+  <link rel="stylesheet" href="rtf.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Barra Superior -->
+    <div class="topbar">
+      <label class="btn btn-primary" for="file">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 17V7a2 2 0 0 1 2-2h6l4 4v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M12 3v4a2 2 0 0 0 2 2h4" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+        Abrir .rtf
+      </label>
+      <input id="file" class="file-input" type="file" accept=".rtf,text/rtf">
+      <div class="grow"></div>
+      <div class="title">Processador RTF → JSON</div>
+    </div>
+
+    <!-- Container Principal com duas colunas -->
+    <div class="main-container">
+      <!-- Coluna Esquerda: Texto Bruto -->
+      <div class="column">
+        <div class="column-header">
+          <h2>Texto Bruto Extraído</h2>
+          <button id="copyTextBtn" class="btn btn-secondary btn-sm">Copiar Texto</button>
+        </div>
+        <textarea id="inputArea" placeholder="O texto extraído do RTF aparecerá aqui..."></textarea>
+      </div>
+
+      <!-- Coluna Direita: JSON Processado -->
+      <div class="column">
+        <div class="column-header">
+          <h2>JSON Estruturado</h2>
+          <div class="btn-group">
+            <button id="processBtn" class="btn btn-primary btn-sm" disabled>Processar</button>
+            <button id="copyJsonBtn" class="btn btn-secondary btn-sm" disabled>Copiar JSON</button>
+            <button id="downloadBtn" class="btn btn-success btn-sm" disabled>Baixar JSON</button>
+          </div>
+        </div>
+        <textarea id="outputArea" placeholder="O JSON processado aparecerá aqui..."></textarea>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span id="statusText">Aguardando arquivo RTF...</span>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <!-- Módulos JavaScript -->
+  <script src="rtf-parser.js"></script>
+  <script src="text-processor.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
