@@ -61,6 +61,33 @@
             background: #ffc107;
             color: #333;
         }
+
+        /* Botões de teste */
+        .test-buttons {
+            position: fixed;
+            bottom: 120px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 1000;
+        }
+
+        .test-btn {
+            padding: 8px 12px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 80px;
+        }
+
+        .test-btn:active {
+            background: #cc0000;
+        }
     </style>
 </head>
 <body>
@@ -72,6 +99,14 @@
     <!-- Status do auto-save -->
     <div class="save-status" id="save-status">
         Salvo automaticamente
+    </div>
+
+    <!-- Botões de teste -->
+    <div class="test-buttons">
+        <button class="test-btn" id="test-supabase">Teste Supabase</button>
+        <button class="test-btn" id="test-cache">Teste Cache</button>
+        <button class="test-btn" id="test-login">Teste Login</button>
+        <button class="test-btn" id="force-load">Forçar Load</button>
     </div>
     
     <div class="main-container">
@@ -98,12 +133,25 @@
     <script src="barra/plugin/cores/cores.js"></script>
     
     <!-- Sistema de sincronização -->
-<script src="../save/config.js"></script>
-<script src="../save/supabase.js"></script>
-<script src="../save/sync.js"></script>
+    <script src="../save/config.js"></script>
+    <script src="../save/supabase.js"></script>
+    <script src="../save/sync.js"></script>
+    <script src="../save/load-sync.js"></script>
     
     <!-- Navbar unificada -->
     <script src="../navbar/navbar-unified.js"></script>
+    
+    <!-- Eruda Debug Console para iPhone -->
+    <script>
+        (function () {
+            var script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/npm/eruda";
+            document.body.appendChild(script);
+            script.onload = function () {
+                eruda.init();
+            }
+        })();
+    </script>
     
     <script>
         // Atualiza indicador de semana
@@ -117,7 +165,62 @@
             } else {
                 document.getElementById('semana-indicator').textContent = 'Sem semana definida';
             }
+
+            // Configura botões de teste
+            setTimeout(() => {
+                setupTestButtons();
+            }, 2000);
         });
+
+        function setupTestButtons() {
+            // Teste Supabase
+            document.getElementById('test-supabase').onclick = async () => {
+                try {
+                    const result = await window.SupabaseSync.carregarRichtextAnotacoes('01-09');
+                    alert(`Supabase Result:\n\n${result ? result.substring(0, 100) + '...' : 'null/vazio'}`);
+                    console.log('🔍 Teste Supabase:', result);
+                } catch (e) {
+                    alert(`Erro Supabase: ${e.message}`);
+                }
+            };
+
+            // Teste Cache
+            document.getElementById('test-cache').onclick = () => {
+                try {
+                    const result = window.cacheRichText.carregar();
+                    alert(`Cache Result:\n\n${result ? result.substring(0, 100) + '...' : 'null/vazio'}`);
+                    console.log('🔍 Teste Cache:', result);
+                } catch (e) {
+                    alert(`Erro Cache: ${e.message}`);
+                }
+            };
+
+            // Teste Login
+            document.getElementById('test-login').onclick = () => {
+                try {
+                    const user = window.SupabaseSync.getCurrentUser();
+                    const isLoggedIn = window.SupabaseSync.isLoggedIn();
+                    alert(`Login Status:\n\nLogado: ${isLoggedIn}\nUser: ${user ? user.usuario : 'null'}`);
+                    console.log('🔍 Teste Login:', { isLoggedIn, user });
+                } catch (e) {
+                    alert(`Erro Login: ${e.message}`);
+                }
+            };
+
+            // Forçar carregamento
+            document.getElementById('force-load').onclick = async () => {
+                try {
+                    if (window.LoadSyncManager && window.LoadSyncManager.reloadContent) {
+                        await window.LoadSyncManager.reloadContent();
+                        alert('Carregamento forçado executado! Verifique o console.');
+                    } else {
+                        alert('LoadSyncManager não disponível');
+                    }
+                } catch (e) {
+                    alert(`Erro Force Load: ${e.message}`);
+                }
+            };
+        }
     </script>
 </body>
 </html>
