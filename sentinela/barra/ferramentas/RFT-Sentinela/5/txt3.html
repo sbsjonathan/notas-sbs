@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>TXT3 — Conversor para HTML</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <style>
+/* Base */
+html, body { height: 100%; margin: 0; padding: 0; font-family: system-ui, -apple-system, Arial, sans-serif; background: #f5f7fa; }
+body { max-width: 100vw; padding: 0 3vw 6vw; box-sizing: border-box; }
+h2 { margin: 16px 0 10px; font-size: 1rem; font-weight: 600; color: #2b3a55; }
+p.descricao { font-size:.82em; color:#5a6472; margin: -5px 0 12px; }
+
+/* Abas */
+.tabs { position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; padding: 10px 0; background: #f5f7fa; }
+.tabs a { flex: 1; text-align: center; text-decoration: none; font-size: .9em; padding: .55em .7em; border-radius: 8px; background: #fff; color: #2b3a55; border: 1px solid #d6dae3; box-shadow: 0 1px 2.5px #0001; }
+.tabs a.active { background: #3264b2; color: #fff; border-color: #3264b2; }
+
+/* Ações e Botões */
+.btn { font-size: .88em; padding: .55em .95em; border-radius: 9px; border: 1px solid transparent; box-shadow: 0 1px 2.5px #0001; min-height: 36px; cursor: pointer; transition: transform .06s, background .12s, border-color .12s; }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: #3264b2; color: #fff; }
+.btn-secondary { background: #eef3ff; color: #274f8e; border-color: #c9d7fb; }
+.btn-success { background: #23b94d; color: #fff; }
+
+/* Áreas de texto */
+textarea {
+  width: 100%; font-size: 0.86em; border-radius: 9px; box-sizing: border-box;
+  border: 1px solid #b8bac7; background: #fff; resize: vertical;
+  margin: 8px 0 12px; line-height: 1.32; transition: border .13s;
+  font-family: inherit; padding: 1em;
+}
+textarea:focus { border-color: #3264b2; outline: none; }
+#inputArea { min-height: 160px; max-height: 42vh; }
+#outputArea { min-height: 520px; max-height: 80vh; white-space: pre-wrap; background: #fff; }
+
+@media (min-width: 900px) {
+  body { max-width: 560px; margin: 32px auto; }
+  .tabs a { flex: unset; }
+  textarea { font-size: .96em; }
+}
+  </style>
+  <script src="bbl.js"></script>
+</head>
+<body>
+  <nav class="tabs">
+    <a href="txt1.html">TXT1</a>
+    <a href="txt2.html">TXT2</a>
+    <a href="txt3.html" class="active">TXT3</a>
+    <a href="txt4.html">TXT4</a>
+  </nav>
+
+  <h2>Conversor para HTML</h2>
+  <p class="descricao">
+    Converte as tags do TXT2 para HTML. Depois, envie para o TXT4 para aplicar o cabeçalho completo.
+  </p>
+
+  <textarea id="inputArea" placeholder="Conteúdo vindo do TXT2 aparece aqui."></textarea>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="processar()">Processar</button>
+    <button id="copyBtn" class="btn btn-secondary" onclick="copiar()">Copiar</button>
+    <span style="flex:1 1 auto"></span>
+    <button id="sendTXT4Btn" class="btn btn-primary" onclick="enviarParaTXT4()">Enviar para TXT4</button>
+  </div>
+
+  <textarea id="outputArea" readonly placeholder="Resultado (HTML) aparecerá aqui..."></textarea>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const semente = localStorage.getItem('TXT3_SEMENTE');
+        if (semente) {
+          document.getElementById('inputArea').value = semente;
+          localStorage.removeItem('TXT3_SEMENTE');
+        }
+      } catch (e) {}
+    });
+
+    const fallbackAbbr = { 'Gênesis':'Gên.', 'Êxodo':'Êxo.', 'Levítico':'Lev.', 'Números':'Núm.', 'Deuteronômio':'Deut.', 'Josué':'Jos.', 'Juízes':'Juí.', 'Rute':'Rute', '1 Samuel':'1 Sam.', '2 Samuel':'2 Sam.', '1 Reis':'1 Reis', '2 Reis':'2 Reis', '1 Crônicas':'1 Crô.', '2 Crônicas':'2 Crô.', 'Esdras':'Esd.', 'Neemias':'Nee.', 'Ester':'Est.', 'Jó':'Jó', 'Salmo':'Sal.', 'Salmos':'Sal.', 'Provérbios':'Pro.', 'Eclesiastes':'Ecl.', 'Cântico de Salomão':'Cânt.', 'Isaías':'Isa.', 'Jeremias':'Jer.', 'Lamentações':'Lam.', 'Ezequiel':'Eze.', 'Daniel':'Dan.', 'Oséias':'Osé.', 'Joel':'Joel', 'Amós':'Amós', 'Obadias':'Oba.', 'Jonas':'Jon.', 'Miquéias':'Miq.', 'Naum':'Naum', 'Habacuque':'Hab.', 'Sofonias':'Sof.', 'Ageu':'Ageu', 'Zacarias':'Zac.', 'Malaquias':'Mal.', 'Mateus':'Mat.', 'Marcos':'Mar.', 'Lucas':'Luc.', 'João':'Jo.', 'Atos':'At.', 'Romanos':'Rom.', '1 Coríntios':'1 Cor.', '2 Coríntios':'2 Cor.', 'Gálatas':'Gál.', 'Efésios':'Efé.', 'Filipenses':'Fili.', 'Colossenses':'Col.', '1 Tessalonicenses':'1 Tes.', '2 Tessalonicenses':'2 Tes.', '1 Timóteo':'1 Tim.', '2 Timóteo':'2 Tim.', 'Tito':'Tito', 'Filemom':'File.', 'Hebreus':'Heb.', 'Tiago':'Tia.', '1 Pedro':'1 Ped.', '2 Pedro':'2 Ped.', '1 João':'1 Jo.', '2 João':'2 Jo.', '3 João':'3 Jo.', 'Judas':'Jud.', 'Revelação':'Rev.' };
+
+    function abreviarLivro(nome) {
+      if (typeof abreviacoesBiblicas === 'object' && abreviacoesBiblicas[nome]) {
+        return abreviacoesBiblicas[nome];
+      }
+      const n2 = nome.replace(/\s+/g,' ').trim();
+      return fallbackAbbr[n2] || fallbackAbbr[nome] || nome;
+    }
+
+    function envolverReferencias(str) {
+      if (!str) return str;
+      const refRegex = /((?:[1-3]\s+)?[A-Za-zÀ-ÿ\.]+)\s+(\d+:\d+(?:[-–]\d+)?(?:,\s*\d+)*)((?:[;,\s]\s*(?!e\s+[A-ZÀ-Úa-zà-ú])[e\s]*\d+:\d+(?:[-–]\d+)?(?:,\s*\d+)*)*)/g;
+      return str.replace(refRegex, (match, livro) => {
+        const livroAbreviado = abreviarLivro(livro);
+        const textoDoLink = match.replace(livro, livroAbreviado);
+        return `<a class="bbl">${textoDoLink}</a>`;
+      });
+    }
+
+    function processar() {
+      const src = (document.getElementById('inputArea').value || '').replace(/\r\n?/g, '\n');
+      if (!src.trim()) {
+        document.getElementById('outputArea').value = '';
+        return;
+      }
+      let estudoNumero = null;
+      const mEstudo = src.match(/<estudo>\s*Estudo\s*(\d+)[^<]*<\/estudo>/i);
+      if (mEstudo) estudoNumero = mEstudo[1];
+      let html = src;
+      html = html.replace(/<estudo>[\s\S]*?<\/estudo>/gi, '');
+      html = html.replace(/<cantico>([\s\S]*?)<\/cantico>/gi, (m, inner) => {
+        const txt = inner.trim();
+        const mm = txt.match(/^c[âa]ntico\s+(\d+)\s+(.+)$/i);
+        if (mm) {
+          return `<div class="secao-cantico">\n  <p><span class="cantico">CÂNTICO ${mm[1]}</span> <span class="cantico-titulo">${mm[2]}</span></p>\n</div>`;
+        }
+        return `<div class="secao-cantico"><p>${txt}</p></div>`;
+      });
+      html = html.replace(/<tema>([\s\S]*?)<\/tema>/gi, (m, inner) => `<h1 class="estudo-titulo">\n  ${inner.trim()}\n</h1>`);
+      html = html.replace(/<citacao>([\s\S]*?)<\/citacao>/gi, (m, inner) => `<p class="citacao">\n  ${envolverReferencias(inner.trim())}\n</p>`);
+      html = html.replace(/<objetivo>([\s\S]*?)<\/objetivo>/gi, (m, inner) => {
+        const parts = inner.replace(/\r\n?/g, '\n').trim().split('\n').map(s => s.trim()).filter(Boolean);
+        const titulo = (parts[0] || 'Objetivo').toUpperCase();
+        const texto = envolverReferencias(parts.slice(1).join(' ').trim());
+        return `<div class="objetivo">\n  <p class="objetivo-titulo">${titulo}</p>\n  <p class="objetivo-texto">${texto}</p>\n</div>`;
+      });
+      html = html.replace(/<pergunta>([\s\S]*?)<\/pergunta>/gi, (m, inner) => {
+        const txt = inner.trim();
+        const mm = txt.match(/^(\d+(?:-\d+)?\.)\s*(.+)$/);
+        // Agora, a função envolverReferencias() é chamada em ambos os casos
+        if (mm) {
+          // mm[1] é o número (ex: "3."), mm[2] é o texto da pergunta
+          return `<div><p class="pergunta"><span>${mm[1]}</span> ${envolverReferencias(mm[2])}</p></div>`;
+        }
+        // Caso a pergunta não tenha um número no início
+        return `<div><p class="pergunta">${envolverReferencias(txt)}</p></div>`;
+      });
+      html = html.replace(/<paragrafo>([\s\S]*?)<\/paragrafo>/gi, (m, inner) => {
+        const txt = inner.trim();
+        const mm = txt.match(/^(\d+)\s+([\s\S]+)$/);
+        if (mm) {
+          return `<p class="paragrafo"><span>${mm[1]}</span> ${envolverReferencias(mm[2].trim())}</p>`;
+        }
+        return `<p class="paragrafo">${envolverReferencias(txt)}</p>`;
+      });
+      html = html.replace(/<subtitulo>([\s\S]*?)<\/subtitulo>/gi, (m, inner) => `<h2 class="subtitulo">${inner.trim()}</h2>`);
+      html = html.replace(/<recap>([\s\S]*?)<\/recap>/gi, (m, inner) => {
+        const linhas = inner.replace(/\r\n?/g, '\n').trim().split('\n').map(s => s.trim()).filter(Boolean);
+        let titulo = 'QUAL É A SUA RESPOSTA?';
+        let itens = linhas;
+        if (linhas.length && !/^[-•]/.test(linhas[0])) {
+          titulo = linhas[0].toUpperCase();
+          itens = linhas.slice(1);
+        }
+        const li = itens.map(t => `<li>${t.replace(/^[-•]\s*/, '').trim()}</li>`).filter(t => t !== '<li></li>').join('\n          ');
+        return `<div class="secao-recapitulacao">\n  <hr class="linha-recapitulacao">\n  <h3 class="titulo-recapitulacao">${titulo}</h3>\n  <ul class="lista-recapitulacao">\n          ${li}\n  </ul>\n</div>`;
+      });
+      html = html.replace(/<rodape>([\s\S]*?)<\/rodape>/gi, (m, inner) => {
+        const textoLimpo = inner.trim();
+        const simbolo = textoLimpo.charAt(0);
+        const restoDoTexto = textoLimpo.substring(1).trim();
+        return `<p class="nota-rodape"><span class="simbolo-rodape">${simbolo}</span> ${envolverReferencias(restoDoTexto)}</p>`;
+      });
+
+      // ============ MODIFICAÇÃO PARA O "(Leia...)" ============
+      // Encontra o padrão "(Leia ...)" e envolve o conteúdo em negrito.
+      // A RegEx captura o que está DENTRO dos parênteses.
+      // A substituição recria os parênteses com o conteúdo capturado ($1) em negrito.
+      html = html.replace(/\((Leia\s+.+?)\)/gi, '(<strong>$1</strong>)');
+      // =========================================================
+
+      html = html.replace(/\n{3,}/g, '\n\n').trim();
+      
+      html = html.replace(/(<\/div>\s*<p class="nota-rodape">)/, '</div>\n<hr class="linha-divisoria">\n<p class="nota-rodape">');
+      
+      const header = (estudoNumero !== null)
+        ? `<header class="barra-estudo">\n  <div>ESTUDO ${estudoNumero}</div>\n</header>`
+        : '';
+      const finalHtml = `<div class="container">\n${header}\n<main>\n${html}\n</main>\n</div>`.replace(/\n{3,}/g, '\n\n');
+      document.getElementById('outputArea').value = finalHtml.trim();
+      const btn = document.getElementById('copyBtn');
+      btn.classList.remove('btn-success');
+      btn.textContent = 'Copiar';
+    }
+
+    function copiar() {
+      const out = document.getElementById('outputArea');
+      if (!out.value.trim()) return;
+      out.select();
+      document.execCommand('copy');
+      const btn = document.getElementById('copyBtn');
+      btn.classList.add('btn-success');
+      btn.textContent = 'Copiado!';
+      setTimeout(()=>{ btn.classList.remove('btn-success'); btn.textContent='Copiar'; }, 1200);
+    }
+
+    function enviarParaTXT4() {
+      const conteudo = document.getElementById('outputArea').value.trim();
+      if (!conteudo) {
+        alert('Primeiro processe o texto para gerar o HTML.');
+        return;
+      }
+      localStorage.setItem('TXT4_SEMENTE', conteudo);
+      window.location.href = 'txt4.html';
+    }
+  </script>
+</body>
+</html>
