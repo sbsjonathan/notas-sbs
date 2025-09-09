@@ -1,0 +1,253 @@
+// save/supabase.js - Versão FINAL, COMPLETA, RESTAURADA e CORRIGIDA
+
+// GUARDA DE SEGURANÇA: Garante que a biblioteca e a config.js foram carregadas PRIMEIRO.
+if (typeof supabase === 'undefined' || !window.SUPABASE_CONFIG) {
+    throw new Error("FATAL: A biblioteca Supabase (supabase-js) ou config.js não foi carregada ANTES de supabase.js.");
+}
+
+const { createClient } = supabase;
+
+class SupabaseSync {
+    constructor() {
+        console.log('🔄 Inicializando SupabaseSync...');
+        try {
+            this.supabase = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+            this.currentUser = null;
+            this.checkExistingLogin();
+            console.log('👍 Cliente Supabase criado com sucesso.');
+        } catch (error) {
+            console.error("❌ Erro CRÍTICO ao criar cliente Supabase:", error);
+            throw error;
+        }
+    }
+
+    // --- Métodos de Autenticação e Usuário ---
+
+    checkExistingLogin() {
+        const savedUser = localStorage.getItem('supabase_user');
+        if (savedUser) {
+            try {
+                this.currentUser = JSON.parse(savedUser);
+                console.log(`👤 Sessão existente para: ${this.currentUser.usuario}`);
+            } catch (e) {
+                localStorage.removeItem('supabase_user');
+            }
+        }
+    }
+
+    getCurrentUser() {
+        return this.currentUser;
+    }
+
+    async cadastrarUsuario(usuario, senha, nome_completo) {
+        try {
+            const { data, error } = await this.supabase
+                .from('usuarios')
+                .insert([{ usuario, senha, nome_completo }])
+                .select()
+                .single();
+            if (error) {
+                if (error.code === '23505') return { success: false, error: 'Este nome de usuário já existe.' };
+                return { success: false, error: 'Erro ao criar conta.', details: error };
+            }
+            return { success: true, userData: data };
+        } catch (error) {
+            return { success: false, error: 'Erro de conexão.', details: error };
+        }
+    }
+    
+    async logarUsuario(usuario, senha) {
+        try {
+            const { data, error } = await this.supabase
+                .from('usuarios')
+                .select('*')
+                .eq('usuario', usuario)
+                .eq('senha', senha)
+                .single();
+            if (error || !data) {
+                return { success: false, error: 'Usuário ou senha inválidos.' };
+            }
+            this.currentUser = data;
+            localStorage.setItem('supabase_user', JSON.stringify(data));
+            return { success: true, userData: data };
+        } catch (error) {
+            return { success: false, error: 'Erro de conexão.', details: error };
+        }
+    }
+
+    logout() {
+        localStorage.removeItem('supabase_user');
+        this.currentUser = null;
+        console.log('👋 Usuário deslogado.');
+    }
+
+    // --- Métodos do Editor (Richtext) ---
+
+    async salvarRichtextAnotacoes(semana, conteudoHtml) {
+        if (!this.currentUser) return { success: false, error: 'Usuário não logado' };
+        try {
+            // Tenta verificar se já existe para decidir entre INSERT e UPDATE
+            const { data: existing } = await this.supabase
+                .from('richtext_anotacoes')
+                .select('id')
+                .eq('usuario_id', this.currentUser.id)
+                .eq('semana', semana)
+                .eq('tipo', 'richtext')
+                .maybeSingle();
+
+            let result;
+            if (existing) {
+                result = await this.supabase
+                    .from('richtext_anotacoes')
+                    .update({ conteudo_html: conteudoHtml, atualizado_em: new Date().toISOString() })
+                    .eq('id', existing.id)
+                    .select().single();
+            } else {
+                result = await this.supabase
+                    .from('richtext_anotacoes')
+                    .insert({
+                        usuario_id: this.currentUser.id,
+                        semana: semana,
+                        tipo: 'richtext',
+                        conteudo_html: conteudoHtml
+                    })
+                    .select().single();
+            }
+
+            if (result.error) return { success: false, error: 'Erro no banco de dados', details: result.error };
+            return { success: true, data: result.data };
+        } catch (error) {
+            return { success: false, error: 'Erro de conexão', details: error };
+        }
+    }
+
+    async carregarRichtextAnotacoes(semana) {
+        if (!this.currentUser) return null;
+        try {
+            const { data, error } = await this.supabase
+                .from('richtext_anotacoes')
+                .select('conteudo_html')
+                .eq('usuario_id', this.currentUser.id)
+                .eq('semana', semana)
+                .eq('tipo', 'richtext')
+                .maybeSingle();
+            if (error) return null;
+            return data ? data.conteudo_html : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    // --- Métodos das Anotações da Sentinela (Clickable) ---
+
+    async salvarSentinelaAnotacoes(semana, estudoId, anotacoes) {
+        if (!this.currentUser) {
+            return { success: false, error: 'Usuário não logado' };
+        }
+        try {
+            const conteudoWrapper = {
+                estudo: estudoId,
+                anotacoes: anotacoes,
+                timestamp: new Date().toISOString()
+            };
+            const conteudoJSON = JSON.stringify(conteudoWrapper);
+
+            // PASSO 1: Verifica se já existe um registro para esta combinação
+            const { data: existing, error: selectError } = await this.supabase
+                .from('richtext_anotacoes')
+                .select('id')
+                .eq('usuario_id', this.currentUser.id)
+                .eq('semana', semana)
+                .eq('tipo', 'sentinela_anotacoes')
+                .maybeSingle();
+
+            if (selectError) {
+                console.error('❌ Erro ao verificar anotação existente:', selectError);
+                return { success: false, error: 'Erro ao checar dados', details: selectError };
+            }
+
+            let result;
+            if (existing) {
+                // PASSO 2a: Se existe, ATUALIZA (UPDATE)
+                console.log(`🔄 Atualizando anotações existentes para semana ${semana}`);
+                const { data, error } = await this.supabase
+                    .from('richtext_anotacoes')
+                    .update({
+                        conteudo_html: conteudoJSON,
+                        atualizado_em: new Date().toISOString()
+                    })
+                    .eq('id', existing.id)
+                    .select()
+                    .single();
+                result = { data, error };
+            } else {
+                // PASSO 2b: Se não existe, INSERE (INSERT)
+                console.log(`➕ Inserindo novas anotações para semana ${semana}`);
+                const { data, error } = await this.supabase
+                    .from('richtext_anotacoes')
+                    .insert({
+                        usuario_id: this.currentUser.id,
+                        semana: semana,
+                        tipo: 'sentinela_anotacoes',
+                        conteudo_html: conteudoJSON,
+                        atualizado_em: new Date().toISOString()
+                    })
+                    .select()
+                    .single();
+                result = { data, error };
+            }
+
+            if (result.error) {
+                console.error('❌ Erro final ao salvar anotações da Sentinela:', result.error);
+                return { success: false, error: 'Erro no banco de dados', details: result.error };
+            }
+
+            console.log(`✅ Anotações da Sentinela (semana ${semana}) salvas com sucesso.`);
+            return { success: true, data: result.data };
+
+        } catch (error) {
+            console.error('❌ Erro inesperado no processo de salvar anotações:', error);
+            return { success: false, error: 'Erro interno no código', details: error };
+        }
+    }
+
+    async carregarSentinelaAnotacoes(semana, estudoId) {
+        if (!this.currentUser) return null;
+        try {
+            const { data, error } = await this.supabase
+                .from('richtext_anotacoes')
+                .select('conteudo_html')
+                .eq('usuario_id', this.currentUser.id)
+                .eq('semana', semana)
+                .eq('tipo', 'sentinela_anotacoes')
+                .maybeSingle();
+
+            if (error) {
+                console.error('❌ Erro ao carregar anotações da Sentinela:', error);
+                return null;
+            }
+            if (data && data.conteudo_html) {
+                const conteudoWrapper = JSON.parse(data.conteudo_html);
+                if (conteudoWrapper.estudo !== estudoId) {
+                    console.warn(`Anotação encontrada para o estudo ${conteudoWrapper.estudo}, mas a página é do estudo ${estudoId}.`);
+                }
+                console.log(`📖 Anotações da Sentinela (semana ${semana}) carregadas.`);
+                return conteudoWrapper.anotacoes || null;
+            }
+            return null;
+        } catch (error) {
+            console.error('❌ Erro inesperado ao carregar anotações da Sentinela:', error);
+            return null;
+        }
+    }
+}
+
+// Bloco de Instanciação Seguro
+try {
+    if (typeof SupabaseSync !== 'undefined') {
+        window.SupabaseSync = new SupabaseSync();
+        console.log('✅🎉 SUCESSO: window.SupabaseSync foi criado e está pronto para ser usado.');
+    }
+} catch (error) {
+    console.error('❌ CRÍTICO: Falha ao instanciar SupabaseSync. O objeto não foi criado. Erro:', error);
+}
