@@ -1,0 +1,75 @@
+/* barra/barra.css */
+
+/* O contêiner do menu, que começa oculto */
+.menu-barra {
+  display: none;
+  background-color: #fdfdfd;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  padding: 18px;
+  margin: -15px 0 20px 0; /* Puxa para perto da barra e afasta do conteúdo */
+  animation: fadeInMenu 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Classe para mostrar o menu */
+.menu-barra.ativa {
+  display: block;
+}
+
+/* Animação de entrada suave */
+@keyframes fadeInMenu {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilo base para todos os botões do menu */
+.menu-barra button {
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  width: 100%; /* Ocupa todo o espaço do menu */
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 10px; /* Espaço entre botões */
+  border: 1px solid;
+}
+
+.menu-barra button:last-child {
+  margin-bottom: 0; /* Remove margem do último botão */
+}
+
+.menu-barra button:active {
+  transform: scale(0.98);
+}
+
+.menu-barra button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Estilo para o botão de carregar da nuvem (NOVO) */
+.btn-carregar-nuvem {
+  background-color: #e3f2fd;
+  border-color: #90caf9;
+  color: #1565c0;
+}
+
+.btn-carregar-nuvem:hover:not(:disabled) {
+  background-color: #bbdefb;
+  border-color: #64b5f6;
+}
+
+/* Estilo para o botão de limpar cache (original, ajustado) */
+.btn-limpar-cache {
+  background-color: #ffebee;
+  border-color: #ffcdd2;
+  color: #c62828;
+}
+
+.btn-limpar-cache:hover:not(:disabled) {
+  background-color: #ffcdd2;
+  border-color: #f44336;
+}
