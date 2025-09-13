@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Editor iPhone (tema claro, 6 botões)</title>
+  <style>
+    :root {
+      --toolbar-h: 56px;
+      --safe: env(safe-area-inset-bottom);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: -apple-system, system-ui, "Inter", "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.45;
+      background: #f7f8fa; /* tema claro */
+      color: #0b0f19;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      min-height: 100%;
+      padding: 12px;
+      /* sem padding extra por padrão; só quando barra estiver visível */
+    }
+    body.toolbar-visible .container {
+      padding-bottom: calc(var(--toolbar-h) + var(--safe) + 16px);
+    }
+
+    #editor {
+      min-height: 65svh;
+      outline: none;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #0b0f19;
+      padding: 16px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+      word-wrap: break-word;
+    }
+    #editor:empty::before {
+      content: attr(data-placeholder);
+      color: #6b7280;
+    }
+
+    /* === Toolbar em estilo de BARRA fixa (não pílula), colada ao teclado === */
+    .kbd-toolbar {
+      position: fixed;
+      left: 0; right: 0; bottom: 0; /* fallback quando visualViewport faltar */
+      height: calc(var(--toolbar-h) + var(--safe));
+      padding-bottom: var(--safe);
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      /* Oculta por padrão */
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .kbd-toolbar.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .kbd-toolbar .bar {
+      width: 100%;
+      background: #ffffff;        /* barra flush com o app */
+      border-top: 1px solid rgba(0,0,0,.12);
+      border-radius: 0;
+      padding: 8px 10px;
+      display: flex;
+      gap: 8px;
+      box-shadow: none;           /* sem flutuação */
+    }
+    .kbd-toolbar button {
+      -webkit-appearance: none;
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      height: 44px; width: 44px;
+      display: grid; place-items: center;
+      font: inherit; font-weight: 600;
+      color: #111827;
+      background: #ffffff;
+      box-shadow: 0 1px 0 rgba(0,0,0,.06) inset, 0 1px 2px rgba(0,0,0,.12);
+      user-select: none;
+    }
+    .kbd-toolbar button:active { transform: translateY(1px); filter: brightness(0.96); }
+    .kbd-toolbar button[aria-pressed="true"] { background: #eef2ff; box-shadow: 0 0 0 2px #dbeafe inset; }
+    .kbd-toolbar .seg { width: 1px; align-self: stretch; background: rgba(0,0,0,.08); margin: 0 2px; }
+
+    .title { font-size: 18px; margin: 0 0 8px 0; color: #111827; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Editor</h1>
+    <div id="editor" contenteditable="true" spellcheck="true" inputmode="text" data-placeholder="Comece a digitar…"></div>
+  </div>
+
+  <div id="toolbar" class="kbd-toolbar" role="toolbar" aria-label="Ferramentas de edição">
+    <div class="bar">
+      <!-- 6 botões: Undo, Redo, Bold, Italic, Underline, Bullet List -->
+      <button type="button" data-cmd="undo" title="Desfazer" aria-label="Desfazer">⎌</button>
+      <button type="button" data-cmd="redo" title="Refazer" aria-label="Refazer">⤻</button>
+      <div class="seg"></div>
+      <button type="button" data-cmd="bold" aria-pressed="false" title="Negrito" aria-label="Negrito"><strong>B</strong></button>
+      <button type="button" data-cmd="italic" aria-pressed="false" title="Itálico" aria-label="Itálico"><em>I</em></button>
+      <button type="button" data-cmd="underline" aria-pressed="false" title="Sublinhar" aria-label="Sublinhar"><u>U</u></button>
+      <div class="seg"></div>
+      <button type="button" data-cmd="insertUnorderedList" title="Lista" aria-label="Lista">•⃝</button>
+    </div>
+  </div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const toolbar = document.getElementById('toolbar');
+    const root = document.documentElement;
+    let savedRange = null;
+
+    // ====== manter range ======
+    function saveRange(){
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      savedRange = sel.getRangeAt(0);
+    }
+    editor.addEventListener('keyup', saveRange);
+    editor.addEventListener('mouseup', saveRange);
+    editor.addEventListener('touchend', saveRange);
+    editor.addEventListener('blur', saveRange);
+
+    function restoreRange(){
+      const sel = window.getSelection();
+      if (!sel) return;
+      if (savedRange) {
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+      } else {
+        editor.focus();
+      }
+    }
+
+    // ====== medir altura real da barra ======
+    function setToolbarHeight(){
+      const h = toolbar.getBoundingClientRect().height || 56;
+      root.style.setProperty('--toolbar-h', h + 'px');
+    }
+
+    // ====== seguir teclado + decidir visibilidade pela presença do caret ======
+    const vv = window.visualViewport;
+    const KEYBOARD_THRESHOLD = 90; // px de redução no viewport para considerar teclado visível
+
+    function caretDentroDoEditor(){
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return false;
+      const range = sel.getRangeAt(0);
+      const container = range.commonAncestorContainer;
+      return editor.contains(container) && sel.isCollapsed; // caret (colapsado) dentro do editor
+    }
+
+    function tecladoVisivel(){
+      if (!vv) return false; // sem visualViewport, preferimos mostrar só pelo caret
+      return (window.innerHeight - vv.height) > KEYBOARD_THRESHOLD;
+    }
+
+    function shouldShow(){
+      const focoNoEditor = document.activeElement === editor || editor.contains(document.activeElement);
+      return focoNoEditor && (tecladoVisivel() || caretDentroDoEditor());
+    }
+
+    function placeToolbar(){
+      if (!vv) return; // fallback fica bottom:0 no CSS
+      toolbar.style.position = 'fixed';
+      toolbar.style.left = vv.offsetLeft + 'px';
+      toolbar.style.width = vv.width + 'px';
+      toolbar.style.top = (vv.offsetTop + vv.height - toolbar.offsetHeight) + 'px';
+      toolbar.style.bottom = 'auto';
+    }
+
+    function updateVisibility(){
+      if (shouldShow()) {
+        toolbar.classList.add('show');
+        document.body.classList.add('toolbar-visible');
+      } else {
+        toolbar.classList.remove('show');
+        document.body.classList.remove('toolbar-visible');
+      }
+      setToolbarHeight();
+      placeToolbar();
+    }
+
+    // ====== comandos ======
+    function reflectState(){
+      document.querySelectorAll('#toolbar [aria-pressed]').forEach(btn => {
+        const cmd = btn.dataset.cmd;
+        let active = false;
+        try { active = document.queryCommandState(cmd); } catch(_) {}
+        btn.setAttribute('aria-pressed', String(!!active));
+      });
+    }
+
+    // evita perder foco
+    toolbar.addEventListener('mousedown', e => { e.preventDefault(); }, { passive: false });
+    toolbar.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-cmd]');
+      if (!btn) return;
+      const cmd = btn.dataset.cmd;
+      restoreRange();
+      try {
+        document.execCommand(cmd, false, null);
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+        reflectState();
+        if (navigator.vibrate) navigator.vibrate(8);
+      } catch(err) {
+        console.log('cmd error', err);
+      }
+    });
+
+    ['keyup','mouseup','touchend','input'].forEach(ev => editor.addEventListener(ev, () => { reflectState(); updateVisibility(); }));
+    document.addEventListener('selectionchange', () => { updateVisibility(); });
+
+    // parágrafo padrão como DIV no iOS
+    try { document.execCommand('defaultParagraphSeparator', false, 'div'); } catch(_) {}
+
+    // ====== bootstrap ======
+    function init(){
+      setToolbarHeight();
+      updateVisibility();
+      if (vv) {
+        vv.addEventListener('resize', updateVisibility);
+        vv.addEventListener('scroll', updateVisibility);
+      }
+      window.addEventListener('orientationchange', () => setTimeout(updateVisibility, 150));
+      editor.addEventListener('focus', updateVisibility);
+      editor.addEventListener('blur', updateVisibility);
+    }
+    document.addEventListener('DOMContentLoaded', init);
+
+    // (Sem cache/persistência — removido a pedido)
+  </script>
+</body>
+</html>

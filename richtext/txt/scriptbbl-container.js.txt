@@ -1,0 +1,371 @@
+// scriptbbl-container.js - Versão simplificada para o projeto Container
+// Remove dependências do sistema Sentinela (cacheRestored, mark.js, etc.)
+
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🟢 scriptbbl-container.js iniciando...');
+
+  // Verifica se as abreviações foram carregadas
+  if (typeof ABREVIACOES === 'undefined') {
+    console.error("ERRO: O arquivo abrev.js não foi carregado.");
+    return;
+  }
+  
+  let isModalOpen = false;
+
+  // Funções para bloquear/desbloquear seleção de texto
+  function blockTextSelection() {
+    document.body.classList.add('no-select-global');
+  }
+
+  function unblockTextSelection() {
+    document.body.classList.remove('no-select-global');
+  }
+
+  // Elementos do modal
+  const modal = document.getElementById('modal-biblia');
+  const modalCorpo = document.getElementById('modal-biblia-corpo');
+  const botaoFechar = document.getElementById('modal-biblia-fechar');
+  const modalContent = document.querySelector('.modal-biblia-content');
+
+  // Função principal para abrir o modal bíblico
+  async function abrirModalBibl(referencia) {
+    isModalOpen = true;
+    blockTextSelection();
+    
+    // Cria o modal se não existir
+    ensureModalExists();
+    
+    const modalElement = document.getElementById('modal-biblia');
+    const modalCorpoElement = document.getElementById('modal-biblia-corpo');
+    
+    modalElement.style.display = 'flex';
+    document.body.style.overflow = "hidden";
+    
+    // Bloqueia seleção em todo o documento
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
+    document.body.style.mozUserSelect = 'none';
+    document.body.style.msUserSelect = 'none';
+    
+    modalCorpoElement.innerHTML = '<h3>Carregando...</h3>';
+    
+    try {
+      const resultado = await buscarVersiculo(referencia);
+      modalCorpoElement.innerHTML = `<h3>${resultado.titulo}</h3><div>${resultado.texto}</div>`;
+    } catch (error) {
+      console.error('Erro ao buscar versículo:', error);
+      modalCorpoElement.innerHTML = '<h3>Erro</h3><div>Não foi possível carregar o versículo.</div>';
+    }
+  }
+
+  // Função para verificar se é uma referência bíblica válida e abrir modal
+  function abrirModalSeForRef(el) {
+    const ref = el.textContent.trim();
+    
+    // Se tiver ponto e vírgula, já sabemos que é complexa
+    if (ref.includes(';')) {
+      console.log('🎯 Detectadas múltiplas referências:', ref);
+      abrirModalBibl(ref);
+      return;
+    }
+    
+    // Lógica para referências simples ou com range de capítulos
+    if (/^[1-3]?\s?[A-Za-zêÊãÃíÍóÓâÂéÉôÔúÚçÇ.]+\s\d+:[\d,\s-–—]+$/.test(ref) || 
+        /^[1-3]?\s?[A-Za-zêÊãÃíÍóÓâÂéÉôÔúÚçÇ.]+\s\d+:\d+\s*[-–—]\s*\d+:\d+$/.test(ref)) {
+      abrirModalBibl(ref);
+    }
+  }
+
+  // Função para fechar o modal
+  function fecharModal() {
+    const modalElement = document.getElementById('modal-biblia');
+    if (modalElement) {
+      modalElement.style.display = 'none';
+    }
+    document.body.style.overflow = "";
+    
+    // Restaura seleção de texto
+    document.body.style.userSelect = '';
+    document.body.style.webkitUserSelect = '';
+    document.body.style.mozUserSelect = '';
+    document.body.style.msUserSelect = '';
+    
+    isModalOpen = false;
+    setTimeout(() => { unblockTextSelection(); }, 100);
+  }
+
+  // Função para garantir que o modal existe no DOM
+  function ensureModalExists() {
+    if (!document.getElementById('modal-biblia')) {
+      const modalHTML = `
+        <div id="modal-biblia">
+          <div class="modal-biblia-content">
+            <span id="modal-biblia-fechar">&times;</span>
+            <div id="modal-biblia-corpo"></div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      // Adiciona listeners ao modal recém-criado
+      setupModalListeners();
+    }
+  }
+
+  // Configura os listeners do modal
+  function setupModalListeners() {
+    const modalElement = document.getElementById('modal-biblia');
+    const botaoFecharElement = document.getElementById('modal-biblia-fechar');
+    const modalContentElement = document.querySelector('.modal-biblia-content');
+
+    if (botaoFecharElement) {
+      botaoFecharElement.addEventListener('click', fecharModal);
+    }
+    
+    if (modalElement) {
+      modalElement.addEventListener('click', fecharModal);
+    }
+    
+    if (modalContentElement) {
+      modalContentElement.addEventListener('click', e => e.stopPropagation());
+      modalContentElement.addEventListener('touchstart', e => e.stopPropagation());
+    }
+    
+    window.addEventListener('keydown', e => { 
+      if (e.key === 'Escape') fecharModal(); 
+    });
+  }
+
+  // Função para processar múltiplas referências
+  async function processarMultiplasReferencias(refString) {
+    const referencias = refString.split(';').map(ref => ref.trim()).filter(ref => ref.length > 0);
+    
+    let resultadosCompletos = [];
+    let nomeLivroBase = '';
+    let titulosParaMostrar = [];
+
+    for (let i = 0; i < referencias.length; i++) {
+      let refAtual = referencias[i].trim();
+      
+      if (i > 0 && /^\d+:[\d,\s-–—]+$/.test(refAtual)) {
+        const primeiraRef = referencias[0];
+        const matchPrimeiraRef = primeiraRef.match(/^([1-3]?\s?[A-Za-zêÊãÃíÍóÓâÂéÉôÔúÚçÇ.]+)\s/);
+        if (matchPrimeiraRef) {
+          refAtual = matchPrimeiraRef[1] + ' ' + refAtual;
+        }
+      }
+
+      const resultado = await buscarVersiculo(refAtual);
+      
+      if (resultado.titulo !== "Referência Inválida" && 
+          resultado.titulo !== "Não Encontrado" && 
+          resultado.titulo !== "Livro não encontrado") {
+        resultadosCompletos.push(resultado);
+        if (nomeLivroBase === '') {
+          const livroMatch = resultado.titulo.match(/^([^0-9]+)/);
+          if (livroMatch) nomeLivroBase = livroMatch[1].trim();
+        }
+        titulosParaMostrar.push(resultado.titulo.replace(nomeLivroBase, '').trim());
+      }
+    }
+
+    if (resultadosCompletos.length === 0) {
+      return { titulo: "Referências Inválidas", texto: "Nenhuma das referências pôde ser encontrada." };
+    }
+    
+    const capitulosUnicos = new Set(resultadosCompletos.map(r => r.titulo.match(/(\d+):/)?.[1]).filter(Boolean));
+    const temMultiplosCapitulos = capitulosUnicos.size > 1;
+
+    const tituloFinal = nomeLivroBase + ' ' + titulosParaMostrar.join('; ');
+    let textoFinal = '';
+    let capitulosJaMostrados = new Set();
+    
+    resultadosCompletos.forEach((resultado, index) => {
+      const numeroCapitulo = resultado.titulo.match(/(\d+):/)?.[1];
+      
+      if (temMultiplosCapitulos && numeroCapitulo && !capitulosJaMostrados.has(numeroCapitulo)) {
+        if (index > 0) {
+          textoFinal += '<div style="margin: 20px 0 15px 0; border-top: 2px solid #ddd; padding-top: 15px;"></div>';
+        }
+        textoFinal += `<div style="margin-bottom: 12px;"><strong style="font-style: italic; color: #666; font-size: 1.1em;">Capítulo ${numeroCapitulo}</strong></div>`;
+        capitulosJaMostrados.add(numeroCapitulo);
+      } else if (index > 0) {
+        textoFinal += '<div style="margin-top: 15px;"></div>';
+      }
+      
+      textoFinal += resultado.texto;
+    });
+
+    return { titulo: tituloFinal, texto: textoFinal };
+  }
+
+  // Função principal para buscar versículos
+  async function buscarVersiculo(refString) {
+    if (refString.includes(';')) {
+      return await processarMultiplasReferencias(refString);
+    }
+    
+    let multiCapMatch = refString.match(/^([1-3]?\s?[A-Za-zêÊãÃíÍóÓâÂéÉôÔúÚçÇ.]+)\s?(\d{1,3}):(\d{1,3})\s*[-–—]\s*(\d{1,3}):(\d{1,3})$/);
+    let singleCapMatch = refString.match(/^([1-3]?\s?[A-Za-zêÊãÃíÍóÓâÂéÉôÔúÚçÇ.]+)\s?(\d{1,3}):([\d,\s-–—]+)/);
+
+    if (!multiCapMatch && !singleCapMatch) {
+      return { titulo: "Referência Inválida", texto: "Formato não reconhecido." };
+    }
+    
+    const isMultiCap = !!multiCapMatch;
+    const match = isMultiCap ? multiCapMatch : singleCapMatch;
+    
+    // Localizador de livros - CORRIGIDO
+    let nomeAbreviado = match[1].replace('.', '').trim();
+    
+    const mapeamentosEspeciais = {
+      'Deut': 'deuteronomio',
+      'Gál': 'galatas',
+      'Gên': 'genesis'
+    };
+    
+    const nomeLivro = mapeamentosEspeciais[nomeAbreviado] || 
+                     ABREVIACOES[nomeAbreviado] || 
+                     nomeAbreviado.toLowerCase().replace(/\s/g, '');
+
+    let dados;
+    try {
+      const resp = await fetch(`biblia/data/${nomeLivro}.json`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      dados = await resp.json();
+    } catch (e) {
+      console.error(`Erro ao buscar biblia/data/${nomeLivro}.json:`, e);
+      return { titulo: "Livro não encontrado", texto: `O livro "${nomeAbreviado}" não foi encontrado.` };
+    }
+
+    let textoHtml = "";
+    let versosColetados = [];
+
+    if (isMultiCap) {
+      let capIni = parseInt(match[2]), versIni = parseInt(match[3]);
+      let capFim = parseInt(match[4]), versFim = parseInt(match[5]);
+
+      for (let c = capIni; c <= capFim; c++) {
+        const capObj = dados.capitulos.find(chap => chap.capitulo === c);
+        if (!capObj) continue;
+
+        let versiculosDoCapitulo = [];
+        if (c === capIni && c === capFim) {
+          versiculosDoCapitulo = capObj.versiculos.filter(v => v.verso >= versIni && v.verso <= versFim);
+        } else if (c === capIni) {
+          versiculosDoCapitulo = capObj.versiculos.filter(v => v.verso >= versIni);
+        } else if (c === capFim) {
+          versiculosDoCapitulo = capObj.versiculos.filter(v => v.verso <= versFim);
+        } else {
+          versiculosDoCapitulo = capObj.versiculos;
+        }
+        
+        versosColetados.push(...versiculosDoCapitulo.map(v => ({...v, capitulo: c})));
+      }
+    } else {
+      const capituloNum = parseInt(match[2]);
+      const capObj = dados.capitulos.find(c => c.capitulo === capituloNum);
+      if (!capObj) return { titulo: "Não Encontrado", texto: `Capítulo ${capituloNum} não encontrado.` };
+      
+      match[3].split(',').forEach(item => {
+        if (item.includes('-')) {
+          const [ini, fim] = item.split('-').map(Number);
+          versosColetados.push(...capObj.versiculos.filter(v => v.verso >= ini && v.verso <= fim));
+        } else {
+          const verso = capObj.versiculos.find(v => v.verso === Number(item));
+          if (verso) versosColetados.push(verso);
+        }
+      });
+    }
+
+    if (versosColetados.length > 0) {
+      const temMultiplosCapitulos = new Set(versosColetados.map(v => v.capitulo)).size > 1;
+      
+      versosColetados.forEach(verso => {
+        const prefixo = temMultiplosCapitulos && verso.capitulo ? `${verso.capitulo}:` : '';
+        textoHtml += `<p><strong>${prefixo}${verso.verso}</strong> ${verso.texto}</p>`;
+      });
+      
+      // CORRIGIDO: Usa o nome real do livro dos dados JSON
+      const tituloLivro = dados.nome || nomeAbreviado;
+      return { titulo: `${tituloLivro} ${match[2]}:${match[3]}`, texto: textoHtml };
+    } else {
+      return { titulo: "Não Encontrado", texto: "Nenhum versículo encontrado para esta referência." };
+    }
+  }
+
+  // Adiciona listeners para links .bbl já existentes no DOM
+  function addListenersToExistingLinks() {
+    document.querySelectorAll('a.bbl').forEach(el => {
+      setupBblLinkListeners(el);
+    });
+  }
+
+  // Configura listeners para um link .bbl específico
+  function setupBblLinkListeners(linkEl) {
+    linkEl.style.cursor = 'pointer';
+    let pressTimer = null;
+    let moveTooMuch = false;
+    let startX = 0, startY = 0;
+
+    const touchStartHandler = (e) => {
+      if (e.touches.length > 1) return;
+      moveTooMuch = false;
+      blockTextSelection();
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      linkEl.classList.add('pressionando');
+      
+      pressTimer = setTimeout(() => {
+        if (!moveTooMuch) {
+          linkEl.classList.remove('pressionando');
+          linkEl.classList.add('ref-aberta');
+          setTimeout(() => {
+            abrirModalSeForRef(linkEl);
+            linkEl.classList.remove('ref-aberta');
+          }, 200);
+        }
+      }, 300);
+    };
+
+    const touchMoveHandler = (e) => {
+      const touch = e.touches[0];
+      if (Math.abs(touch.clientX - startX) > 10 || Math.abs(touch.clientY - startY) > 10) {
+        moveTooMuch = true;
+        clearTimeout(pressTimer);
+        linkEl.classList.remove('pressionando');
+      }
+    };
+
+    const resetHandler = () => {
+      clearTimeout(pressTimer);
+      linkEl.classList.remove('pressionando', 'ref-aberta');
+      if (!isModalOpen) {
+        setTimeout(() => { unblockTextSelection(); }, 50);
+      }
+    };
+
+    linkEl.addEventListener('touchstart', touchStartHandler);
+    linkEl.addEventListener('touchmove', touchMoveHandler);
+    linkEl.addEventListener('touchend', resetHandler);
+    linkEl.addEventListener('touchcancel', resetHandler);
+    linkEl.addEventListener('contextmenu', e => e.preventDefault());
+  }
+
+  // CORRIGIDO: Só configura se o modal JÁ existir no DOM
+  if (modal && botaoFechar && modalContent) {
+    setupModalListeners();
+  }
+
+  // Adiciona listeners para links existentes
+  addListenersToExistingLinks();
+
+  // Torna as funções disponíveis globalmente para o plugin leitor.js
+  window.abrirModalBibl = abrirModalBibl;
+  window.buscarVersiculo = buscarVersiculo;
+  window.abrirModalSeForRef = abrirModalSeForRef;
+  window.setupBblLinkListeners = setupBblLinkListeners;
+
+  console.log('✅ Sistema bíblico simplificado carregado para Container');
+});
