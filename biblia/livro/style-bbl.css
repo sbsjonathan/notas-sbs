@@ -1,0 +1,45 @@
+/* /livro/style-bbl.css */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    margin: 0;
+    padding: 15px;
+}
+.container { max-width: 450px; margin: 0 auto; }
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 5px;
+    background-color: #e4e3e8;
+    margin: -15px -15px 7px -15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    position: relative;
+}
+.header .back-button {
+    position: absolute; left: 15px; top: 50%;
+    transform: translateY(-50%);
+    color: #5B3C88;
+    text-decoration: none;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+.header .title { font-size: 0.95em; font-weight: 700; }
+.chapters-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 60px);
+    gap: 2px;
+    margin-left: -8px;
+}
+.chapter-button {
+    width: 60px; height: 60px;
+    background-color: #757575;
+    color: white; border: none; font-size: 1.1em;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: background-color 0.2s;
+    text-decoration: none;
+}
+.chapter-button:hover { background-color: #707070; }
