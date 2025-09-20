@@ -1,0 +1,241 @@
+/* clickable/clickable.css (VERSÃO FINAL COM POSICIONAMENTO ROBUSTO) */
+
+/* Animação de abrir o container (inalterada) */
+@keyframes fallAndFadeIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* Animação para o ícone de 'loading' (inalterada) */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* O contêiner da anotação (inalterado) */
+.anotacao {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in;
+}
+.anotacao.ativa {
+  max-height: 500px;
+  opacity: 1;
+}
+
+/* Wrapper que posiciona o botão (inalterado) */
+.ia-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* A caixa de texto editável dentro do contêiner ativo */
+.anotacao.ativa .ia-wrapper {
+  animation: fallAndFadeIn 0.4s ease-out forwards;
+}
+
+/* Estilo aprimorado da caixa de texto (inalterado) */
+.clickable {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 50px 12px 14px; /* Aumentei um pouco o espaço para o botão */
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #4b5563;
+  background-color: #f9fafb;
+  box-sizing: border-box;
+  line-height: 1.5;
+  border: 1px solid #d1d5db;
+  border-radius: 8px; 
+  transition: all 0.2s;
+}
+
+/* Efeito de foco (inalterado) */
+.clickable:focus {
+  outline: none;
+  border-color: #375255;
+  box-shadow: 0 0 0 3px rgba(55, 82, 85, 0.15);
+}
+
+/* --- CORREÇÃO PRINCIPAL AQUI --- */
+/* Estilo para o botão de gerar IA com posicionamento robusto */
+.btn-gerar-ia {
+  position: absolute;
+  /* MUDANÇA: Em vez de 50%, usamos uma distância fixa do topo. */
+  /* Isso garante que ele fique sempre no canto superior direito. */
+  top: 9px;
+  right: 9px;
+  /* REMOVIDO: transform: translateY(-50%); não é mais necessário. */
+  
+  /* Estilos visuais (inalterados) */
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: #375255;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-gerar-ia:hover {
+  background-color: rgba(55, 82, 85, 0.1);
+}
+
+.btn-gerar-ia:disabled {
+  cursor: not-allowed;
+  color: #9ca3af;
+}
+
+/* Estilo para o estado de 'loading' (inalterado) */
+.ia-wrapper.ia-loading .btn-gerar-ia {
+  animation: spin 1s linear infinite;
+  pointer-events: none;
+}
+
+
+
+
+
+/* Adicione este CSS ao seu style.css */
+
+/* Referência clicável do parágrafo */
+.ia-ref-clicavel {
+  cursor: pointer !important;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.ia-ref-clicavel:hover {
+  background-color: rgba(55, 82, 85, 0.1);
+  transform: scale(1.05);
+  color: var(--cor-titulo-principal) !important;
+}
+
+.ia-ref-clicavel:active {
+  transform: scale(0.95);
+  background-color: rgba(55, 82, 85, 0.2);
+}
+
+/* Animação de destaque do parágrafo */
+.paragrafo-destaque {
+  animation: paragrafo-pulse 0.8s ease-in-out;
+  background: linear-gradient(90deg, 
+    rgba(255, 215, 0, 0.2) 0%, 
+    rgba(255, 215, 0, 0.1) 50%, 
+    rgba(255, 215, 0, 0.2) 100%);
+  border-radius: 8px;
+  padding: 8px;
+  margin: -8px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+@keyframes paragrafo-pulse {
+  0% {
+    background: transparent;
+    box-shadow: none;
+    transform: scale(1);
+  }
+  50% {
+    background: linear-gradient(90deg, 
+      rgba(255, 215, 0, 0.25) 0%, 
+      rgba(255, 215, 0, 0.15) 50%, 
+      rgba(255, 215, 0, 0.25) 100%);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+    transform: scale(1.02);
+  }
+  100% {
+    background: linear-gradient(90deg, 
+      rgba(255, 215, 0, 0.2) 0%, 
+      rgba(255, 215, 0, 0.1) 50%, 
+      rgba(255, 215, 0, 0.2) 100%);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    transform: scale(1);
+  }
+}
+
+/* ===== CORREÇÃO DO BUG DO SWIPER ===== */
+/* REMOVIDO o scroll-behavior: smooth global que causava conflito */
+/* Se você quiser smooth scroll em links específicos, use classes: */
+
+/* Classe opcional para elementos que DEVEM ter smooth scroll */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Ou aplique apenas em links de âncora internos */
+a[href^="#"]:not([href="#"]) {
+  scroll-behavior: smooth;
+}
+
+/* 
+   NOTA: O scroll-behavior: smooth global foi removido porque
+   interferia com o JavaScript do swiper-zoom ao restaurar 
+   a posição do scroll programaticamente.
+*/
+
+/* ADICIONE no final do arquivo clickable.css */
+
+/* Estilo específico para o objetivo clicável */
+.objetivo {
+  transition: all 0.2s ease;
+  margin-bottom: 0; /* Remove espaço extra */
+}
+
+.objetivo:hover {
+  background-color: rgba(55, 82, 85, 0.05);
+  border-radius: 6px;
+  transform: scale(1.01);
+}
+
+/* Anotação do objetivo sem espaço extra */
+.objetivo + .anotacao {
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+
+/* Resposta da IA para objetivo com scroll */
+.clickable[id^="r-obj-"] {
+  min-height: 120px;
+  max-height: 400px;  /* Altura máxima */
+  line-height: 1.6;
+  font-size: 0.98rem;
+  overflow-y: auto;   /* Scroll vertical */
+  overflow-x: hidden; /* Sem scroll horizontal */
+  padding-right: 45px; /* Espaço para o botão */
+  box-sizing: border-box;
+}
+
+/* Scroll bar customizada (opcional - fica mais bonita) */
+.clickable[id^="r-obj-"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.clickable[id^="r-obj-"]::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.clickable[id^="r-obj-"]::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.clickable[id^="r-obj-"]::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Botão específico para objetivo */
+.ia-btn-objetivo {
+  background: transparent !important;
+  color: #9ca3af !important;
+  border: 1px solid #e5e7eb !important;
+}

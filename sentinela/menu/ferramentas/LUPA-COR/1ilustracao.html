@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profecia de Jacó - Rubem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #EFEEEA;
+            max-width: 900px;
+            width: 100%;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: none;
+        }
+
+        .header {
+            background-color: #9A3D14;
+            color: white;
+            padding: 35px 40px;
+            font-size: 42px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .content {
+            display: flex;
+            padding: 50px 40px;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .image-section { flex-shrink: 0; }
+
+        .profile-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #b8a590;
+            background-color: #c5b5a0;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .text-section { flex: 1; padding-top: 10px; }
+
+        .filho-section { margin-bottom: 45px; }
+
+        .label {
+            color: #c17830;
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .name {
+            color: #3a3a3a;
+            font-size: 34px;
+            font-weight: 400;
+            margin-left: 2px;
+        }
+
+        .profecia-section { margin-bottom: 45px; }
+
+        .section-title {
+            color: #c17830;
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .quote {
+            color: #3a3a3a;
+            font-size: 30px;
+            line-height: 1.4;
+        }
+
+        .bible-reference { color: #6b8cbe; font-weight: 400; }
+
+        .cumprimento-section { margin-bottom: 20px; }
+
+        .cumprimento-text {
+            color: #3a3a3a;
+            font-size: 30px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .header { font-size: 28px; padding: 25px 20px; }
+            .content { padding: 30px 20px; gap: 25px; }
+            .profile-image { width: 120px; height: 120px; border: 3px solid #b8a590; }
+            .label { font-size: 26px; margin-bottom: 5px; }
+            .section-title { font-size: 26px; margin-bottom: 15px; }
+            .filho-section, .profecia-section { margin-bottom: 30px; }
+            .name { font-size: 24px; }
+            .quote, .cumprimento-text { font-size: 20px; }
+        }
+
+        @media (max-width: 480px) {
+            .header { font-size: 22px; padding: 20px 15px; }
+            .content { padding: 25px 15px; gap: 20px; }
+            .profile-image { width: 90px; height: 90px; }
+            .label, .section-title { font-size: 20px; }
+            .name { font-size: 18px; }
+            .quote, .cumprimento-text { font-size: 16px; line-height: 1.4; }
+            .filho-section, .profecia-section { margin-bottom: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            A profecia que Jacó fez em seu leito de morte
+        </div>
+
+        <div class="content">
+            <div class="image-section">
+                <div class="profile-image">
+                    <img src="img1.jpg" alt="Rubem">
+                </div>
+            </div>
+
+            <div class="text-section">
+                <div class="filho-section">
+                    <div class="label">Filho</div>
+                    <div class="name">Rubem</div>
+                </div>
+
+                <div class="profecia-section">
+                    <div class="section-title">Profecia</div>
+                    <div class="quote">
+                        "Você não sobressairá." — <span class="bible-reference">Gên. 49:4</span>.
+                    </div>
+                </div>
+
+                <div class="cumprimento-section">
+                    <div class="section-title">Cumprimento</div>
+                    <div class="cumprimento-text">
+                        A tribo de Rubem nunca teve uma posição de liderança na nação de Israel. — <span class="bible-reference">1 Crô. 5:1, 2</span>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
