@@ -1,6 +1,7 @@
 const CACHE_VERSION = 'v1';
 const RICHTEXT_CACHE = `richtext-offline-${CACHE_VERSION}`;
 const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
+const OFFLINE_CONTENT_PREFIXES = ['richtext/', 'sentinela/'];
 
 const APP_SHELL_FILES = [
   'index.html',
@@ -52,7 +53,7 @@ self.addEventListener('fetch', event => {
 
   const relativePath = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
 
-  if (relativePath.startsWith('richtext/')) {
+  if (OFFLINE_CONTENT_PREFIXES.some(prefix => relativePath.startsWith(prefix))) {
     event.respondWith(cacheFirst(request, RICHTEXT_CACHE));
     return;
   }

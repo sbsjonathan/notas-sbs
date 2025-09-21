@@ -422,7 +422,7 @@
             </div>
             
             <button class="btn btn-load btn-download-richtext" id="btn-carregar-conteudo">
-                📥 Download de RichText
+                📥 Download de Conteúdo Offline
             </button>
             
             <button class="btn btn-primary" id="btn-continuar-logged">
@@ -447,7 +447,7 @@
             </div>
             
             <button class="btn btn-load btn-download-richtext" id="btn-carregar-sucesso">
-                📥 Download de RichText
+                📥 Download de Conteúdo Offline
             </button>
             
             <button class="btn btn-primary" id="btn-continuar">
@@ -553,7 +553,7 @@
                         const lastSync = localStorage.getItem(RICHTEXT_LAST_SYNC_KEY);
                         this.showContainer();
                         this.icon.textContent = '✅';
-                        this.setProgress(1, 'RichText disponível offline', `${keys.length} arquivos armazenados`);
+                        this.setProgress(1, 'Conteúdo offline disponível', `${keys.length} arquivos armazenados`);
                         this.setLastUpdated(lastSync);
                     }
                 } catch (error) {
@@ -594,7 +594,7 @@
 
                     const urls = await manifestResponse.json();
                     this.total = urls.length;
-                    this.setProgress(0, 'Baixando RichText...', `0 de ${this.total} arquivos`);
+                    this.setProgress(0, 'Baixando conteúdo offline...', `0 de ${this.total} arquivos`);
 
                     const worker = registration.active || navigator.serviceWorker.controller;
                     if (!worker) {
@@ -606,7 +606,7 @@
                         urls
                     });
 
-                    this.authUI?.showStatusBadge('📥 Baixando RichText para uso offline...', 'loading');
+                    this.authUI?.showStatusBadge('📥 Baixando conteúdo offline...', 'loading');
                 } catch (error) {
                     console.error('Erro ao iniciar download offline:', error);
                     this.alert.textContent = 'Falha ao iniciar o download offline.';
@@ -667,11 +667,11 @@
                 if (success) {
                     this.icon.textContent = '✅';
                     this.alert.textContent = '';
-                    this.setProgress(1, 'RichText offline disponível!', `${total} arquivos armazenados`);
+                    this.setProgress(1, 'Conteúdo offline disponível!', `${total} arquivos armazenados`);
                     const now = new Date();
                     localStorage.setItem(RICHTEXT_LAST_SYNC_KEY, now.toISOString());
                     this.setLastUpdated(now);
-                    this.authUI?.showStatusBadge('✅ RichText disponível offline', 'success');
+                    this.authUI?.showStatusBadge('✅ Conteúdo offline disponível', 'success');
                     this.authUI?.onOfflineDownloadComplete();
                     this.scheduleButtonReset();
                 } else {
@@ -694,7 +694,7 @@
 
                     if (disabled) {
                         btn.classList.add('loading');
-                        btn.textContent = 'Baixando RichText...';
+                        btn.textContent = 'Baixando conteúdo offline...';
                     } else {
                         btn.classList.remove('loading');
                         btn.textContent = btn.dataset.defaultLabel;
@@ -706,7 +706,7 @@
                 setTimeout(() => {
                     this.downloadButtons.forEach((btn) => {
                         if (btn.dataset.defaultLabel) {
-                            btn.textContent = '✅ RichText Offline Atualizado';
+                            btn.textContent = '✅ Conteúdo offline atualizado';
                             setTimeout(() => {
                                 btn.textContent = btn.dataset.defaultLabel;
                             }, 2500);
