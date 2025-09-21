@@ -117,5 +117,13 @@
     <!-- Navbar e Debug -->
     <script src="../navbar/navbar-unified.js"></script>
 
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('../service-worker.js').catch((error) => {
+                console.warn('Falha ao registrar o Service Worker na página RichText:', error);
+            });
+        }
+    </script>
+
 </body>
 </html>
