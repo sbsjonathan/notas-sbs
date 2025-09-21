@@ -488,10 +488,10 @@
     <script src="sync-bridge.js"></script>
     <script src="../navbar/navbar-unified.js"></script>
     <script>
-        const RICHTEXT_CACHE_NAME = 'richtext-offline-v1';
-        const RICHTEXT_LAST_SYNC_KEY = 'richtext-offline-last-sync';
+        const OFFLINE_CACHE_NAME = 'content-offline-v2';
+        const OFFLINE_LAST_SYNC_KEY = 'content-offline-last-sync';
 
-        class RichTextOfflineManager {
+        class OfflineContentManager {
             constructor(authUI) {
                 this.authUI = authUI;
                 this.container = document.getElementById('offline-download-status');
@@ -525,14 +525,21 @@
                 }
 
                 try {
-                    this.registrationPromise = navigator.serviceWorker
-                        .register('../service-worker.js')
-                        .then(() => navigator.serviceWorker.ready);
+                    this.registrationPromise = navigator.serviceWorker.ready;
+
+                    try {
+                        await navigator.serviceWorker.register('../service-worker.js');
+                    } catch (registerError) {
+                        console.warn('Falha ao registrar Service Worker, usando registro existente se disponível:', registerError);
+                        if (!navigator.serviceWorker.controller) {
+                            throw registerError;
+                        }
+                    }
 
                     await this.registrationPromise;
                     await this.checkExistingCache();
                 } catch (error) {
-                    console.error('Erro ao registrar Service Worker:', error);
+                    console.error('Erro ao preparar Service Worker:', error);
                     this.showContainer();
                     this.setProgress(0, 'Não foi possível preparar o modo offline', 'Tente novamente mais tarde');
                     this.alert.textContent = 'Verifique sua conexão ou atualize a página.';
@@ -546,11 +553,11 @@
                 }
 
                 try {
-                    const cache = await caches.open(RICHTEXT_CACHE_NAME);
+                    const cache = await caches.open(OFFLINE_CACHE_NAME);
                     const keys = await cache.keys();
 
                     if (keys.length > 0) {
-                        const lastSync = localStorage.getItem(RICHTEXT_LAST_SYNC_KEY);
+                        const lastSync = localStorage.getItem(OFFLINE_LAST_SYNC_KEY);
                         this.showContainer();
                         this.icon.textContent = '✅';
                         this.setProgress(1, 'Conteúdo offline disponível', `${keys.length} arquivos armazenados`);
@@ -602,7 +609,7 @@
                     }
 
                     worker.postMessage({
-                        type: 'CACHE_RICHTEXT_MANIFEST',
+                        type: 'CACHE_OFFLINE_MANIFEST',
                         urls
                     });
 
@@ -669,7 +676,7 @@
                     this.alert.textContent = '';
                     this.setProgress(1, 'Conteúdo offline disponível!', `${total} arquivos armazenados`);
                     const now = new Date();
-                    localStorage.setItem(RICHTEXT_LAST_SYNC_KEY, now.toISOString());
+                    localStorage.setItem(OFFLINE_LAST_SYNC_KEY, now.toISOString());
                     this.setLastUpdated(now);
                     this.authUI?.showStatusBadge('✅ Conteúdo offline disponível', 'success');
                     this.authUI?.onOfflineDownloadComplete();
@@ -777,7 +784,7 @@
             constructor() {
                 this.currentScreen = 'login';
                 this.statusBadge = document.getElementById('sync-status-badge');
-                this.offlineManager = new RichTextOfflineManager(this);
+                this.offlineManager = new OfflineContentManager(this);
                 this.init();
             }
 

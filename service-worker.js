@@ -1,7 +1,6 @@
-const CACHE_VERSION = 'v1';
-const RICHTEXT_CACHE = `richtext-offline-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v2';
+const OFFLINE_CACHE = `content-offline-${CACHE_VERSION}`;
 const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
-const OFFLINE_CONTENT_PREFIXES = ['richtext/', 'sentinela/'];
 
 const APP_SHELL_FILES = [
   'index.html',
@@ -19,6 +18,8 @@ const APP_SHELL_FILES = [
   'save/unified-load.js'
 ];
 
+const APP_SHELL_FILES_SET = new Set(APP_SHELL_FILES);
+
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     await precacheAppShell();
@@ -28,7 +29,7 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
-    const expectedCaches = new Set([RICHTEXT_CACHE, APP_SHELL_CACHE]);
+    const expectedCaches = new Set([OFFLINE_CACHE, APP_SHELL_CACHE]);
     const keys = await caches.keys();
     await Promise.all(keys.map(key => {
       if (!expectedCaches.has(key)) {
@@ -53,17 +54,18 @@ self.addEventListener('fetch', event => {
 
   const relativePath = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
 
-  if (OFFLINE_CONTENT_PREFIXES.some(prefix => relativePath.startsWith(prefix))) {
-    event.respondWith(cacheFirst(request, RICHTEXT_CACHE));
-    return;
-  }
+  event.respondWith((async () => {
+    const cached = await caches.match(request, { ignoreSearch: true });
+    if (cached) {
+      return cached;
+    }
 
-  if (APP_SHELL_FILES_SET.has(relativePath)) {
-    event.respondWith(cacheFirst(request, APP_SHELL_CACHE));
-    return;
-  }
+    if (APP_SHELL_FILES_SET.has(relativePath)) {
+      return cacheFirst(request, APP_SHELL_CACHE);
+    }
 
-  event.respondWith(networkFirst(request));
+    return networkFirst(request, relativePath);
+  })());
 });
 
 self.addEventListener('message', event => {
@@ -72,17 +74,15 @@ self.addEventListener('message', event => {
     return;
   }
 
-  if (data.type === 'CACHE_RICHTEXT_MANIFEST' && Array.isArray(data.urls)) {
+  if (data.type === 'CACHE_OFFLINE_MANIFEST' && Array.isArray(data.urls)) {
     const clientId = event.source && event.source.id;
-    event.waitUntil(cacheRichTextResources(data.urls, clientId));
+    event.waitUntil(cacheOfflineResources(data.urls, clientId));
   }
 
-  if (data.type === 'CLEAR_RICHTEXT_CACHE') {
-    event.waitUntil(caches.delete(RICHTEXT_CACHE));
+  if (data.type === 'CLEAR_OFFLINE_CACHE') {
+    event.waitUntil(caches.delete(OFFLINE_CACHE));
   }
 });
-
-const APP_SHELL_FILES_SET = new Set(APP_SHELL_FILES);
 
 async function precacheAppShell() {
   const cache = await caches.open(APP_SHELL_CACHE);
@@ -113,11 +113,12 @@ async function cacheFirst(request, cacheName) {
   return response;
 }
 
-async function networkFirst(request) {
+async function networkFirst(request, relativePath) {
   try {
     const response = await fetch(request);
-    const cache = await caches.open(APP_SHELL_CACHE);
     if (response && response.ok) {
+      const cacheName = APP_SHELL_FILES_SET.has(relativePath) ? APP_SHELL_CACHE : OFFLINE_CACHE;
+      const cache = await caches.open(cacheName);
       await cache.put(request, response.clone());
     }
     return response;
@@ -126,12 +127,16 @@ async function networkFirst(request) {
     if (cached) {
       return cached;
     }
+    const fallback = await caches.match('index.html', { ignoreSearch: true });
+    if (fallback) {
+      return fallback;
+    }
     throw error;
   }
 }
 
-async function cacheRichTextResources(urls, clientId) {
-  const cache = await caches.open(RICHTEXT_CACHE);
+async function cacheOfflineResources(urls, clientId) {
+  const cache = await caches.open(OFFLINE_CACHE);
   const total = urls.length;
   let completed = 0;
   let errors = 0;
