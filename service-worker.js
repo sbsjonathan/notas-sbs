@@ -1,7 +1,7 @@
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const RICHTEXT_CACHE = `richtext-offline-${CACHE_VERSION}`;
 const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
-const OFFLINE_CONTENT_PREFIXES = ['richtext/', 'sentinela/'];
+const OFFLINE_CONTENT_PREFIXES = ['richtext/', 'sentinela/', 'biblia/', 'navbar/', 'save/'];
 
 const APP_SHELL_FILES = [
   'index.html',
