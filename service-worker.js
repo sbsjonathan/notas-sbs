@@ -10,6 +10,8 @@ const APP_SHELL_FILES = [
   'navbar/navbar-unified.css',
   'navbar/navbar-unified.js',
   'richtext/offline-manifest.json',
+  'vendor/swiper/swiper-bundle.min.css',
+  'vendor/swiper/swiper-bundle.min.js',
   'save/auth-supabase.html',
   'save/config.js',
   'save/auto-save.js',

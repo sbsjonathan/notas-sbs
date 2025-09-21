@@ -354,6 +354,7 @@
   "sentinela/imagem/semanas/15-09/leg2.txt",
   "sentinela/imagem/semanas/15-09/leg3.txt",
   "sentinela/imagem/semanas/15-09/leg4.txt",
+  "sentinela/imagem/ilust/ilust-universal.js",
   "sentinela/imagem/swiper-zoom.css",
   "sentinela/imagem/swiper-zoom.js",
   "sentinela/mark.js",
@@ -382,5 +383,7 @@
   "sentinela/menu/menu.js",
   "sentinela/style.css",
   "service-worker.js",
+  "vendor/swiper/swiper-bundle.min.css",
+  "vendor/swiper/swiper-bundle.min.js",
   "styles.css"
 ]
