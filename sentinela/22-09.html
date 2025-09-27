@@ -3,166 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Estudo Em Breve</title>
-    
-    <!-- Navbar Unificada -->
+    <title>A Sentinela</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans:wght@400;700;800&family+Noto+Serif:ital@1&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="biblia/stylebbl.css">
+    <link rel="stylesheet" href="clickable/clickable.css">
+    <link rel="stylesheet" href="menu/menu.css">
+    <link rel="stylesheet" href="clickable/agente-modal/agente-modal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css">
+    <link rel="stylesheet" href="imagem/swiper-zoom.css">
     <link rel="stylesheet" href="../navbar/navbar-unified.css">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            padding-bottom: calc(90px + env(safe-area-inset-bottom));
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .icone {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
-
-        .titulo {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #375255;
-            margin-bottom: 15px;
-        }
-
-        .semana-info {
-            font-size: 1.1rem;
-            color: #6B46C1;
-            font-weight: 500;
-            margin-bottom: 25px;
-        }
-
-        .mensagem {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .botoes {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .botao {
-            padding: 16px 24px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .botao-voltar {
-            background: #375255;
-            color: white;
-        }
-
-        .botao-voltar:active {
-            background: #2a3d40;
-            transform: scale(0.95);
-        }
-
-        .botao-tentar {
-            background: #6b7280;
-            color: white;
-        }
-
-        .botao-tentar:active {
-            background: #4b5563;
-            transform: scale(0.95);
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 30px 20px;
-            }
-            
-            .titulo {
-                font-size: 1.5rem;
-            }
-            
-            .icone {
-                font-size: 3rem;
-            }
-        }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="icone">📖</div>
-        
-        <h1 class="titulo">Estudo Em Breve</h1>
-        <p class="semana-info" id="semana-display">Carregando...</p>
-        
-        <p class="mensagem">
-            O estudo de <strong>A Sentinela</strong> para esta semana ainda não foi publicado. 
-            Nossos estudos são disponibilizados semanalmente.
-        </p>
+<body data-estudo="29" style="--cor-principal-estudo: #522149;">
 
-        <div class="botoes">
-            <a href="../index.html" class="botao botao-voltar">
-                <span>←</span>
-                <span>Voltar ao Índice</span>
-            </a>
-            <button onclick="window.location.reload()" class="botao botao-tentar">
-                <span>🔄</span>
-                <span>Verificar Novamente</span>
-            </button>
-        </div>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  window.semanaAtual = urlParams.get('semana') || '22-09';
+  window.estudoId = '29';
+</script>
+
+<div class="container">
+<header class="barra-estudo">
+  <div>ESTUDO 29</div>
+</header>
+<main>
+<div class="secao-cantico">
+  <p><span class="cantico">CÂNTICO 87</span> <span class="cantico-titulo">As reuniões nos encorajam</span></p>
+</div>
+
+<h1 class="estudo-titulo">
+  Como dar um bom conselho?
+</h1>
+
+<p class="citacao">
+  “Eu o aconselharei com os meus olhos fixos em você.” — <a class="bbl">Sal. 32:8</a>.
+</p>
+
+<div class="objetivo">
+  <p class="objetivo-titulo">OBJETIVO</p>
+  <p class="objetivo-texto">Aprender como dar um conselho que realmente pode ajudar alguém.</p>
+</div>
+
+<div><p class="pergunta"><span>1.</span> Quem precisa dar conselhos, e por quê?</p></div>
+
+<p class="paragrafo"><span>1</span> Você gosta de dar conselhos? Alguns têm facilidade em fazer isso. Já outros ficam com medo ou não se sentem à vontade. De qualquer forma, todos nós precisamos dar conselhos de vez em quando. Por quê? Porque Jesus disse que seus verdadeiros seguidores seriam identificados pelo amor que mostram uns pelos outros. (<a class="bbl">João 13:35</a>) E uma forma de mostrarmos esse amor é por dar conselhos aos nossos irmãos e irmãs quando é necessário. A Palavra de Deus diz que uma “doce amizade” pode surgir de um “conselho sincero”. — <a class="bbl">Pro. 27:9</a>.</p>
+
+<div><p class="pergunta"><span>2.</span> O que os anciãos precisam saber fazer, e por quê? (Veja também o quadro “Conselhos na reunião do meio de semana”.)</p></div>
+
+<p class="paragrafo"><span>2</span> Em especial os anciãos precisam saber dar bons conselhos. Jeová e Jesus designaram esses homens como pastores para a congregação. (<a class="bbl">1 Ped. 5:2, 3</a>) E uma das maneiras que os anciãos fazem isso é por meio de discursos que incluem conselhos da Bíblia. Eles também precisam dar conselho para as ovelhas de maneira individual, incluindo aquelas que se afastaram do rebanho. Como os anciãos, e também todos na congregação, podem dar bons conselhos?</p>
+
+<div class="ilust1"></div>
+
+<div><p class="pergunta"><span>3.</span> (a) Como podemos aprender a dar bons conselhos? (<a class="bbl">Isa. 9:6</a>; veja também o quadro “Imite a Jesus ao dar conselho”.) (b) O que vamos ver neste estudo?</p></div>
+
+<p class="paragrafo"><span>3</span> Podemos aprender a dar bons conselhos estudando o exemplo de personagens da Bíblia, principalmente o de Jesus. Um dos títulos que Jesus recebeu foi o de “Maravilhoso Conselheiro”. (<strong>Leia <a class="bbl">Isa. 9:6</a>.</strong>) Neste estudo, vamos ver o que fazer ao dar um conselho que <strong><em>foi pedido</em></strong> e o que fazer ao dar um conselho que <strong><em>não foi pedido</em></strong>. Também vamos ver a importância de dar o conselho no momento certo e da maneira certa.</p>
+
+<div class="ilust2"></div>
+
+<h2 class="subtitulo">Ao dar um conselho que foi pedido</h2>
+
+<div><p class="pergunta"><span>4-5.</span> Quando alguém nos pede um conselho, o que devemos nos perguntar? Dê um exemplo.</p></div>
+
+<p class="paragrafo"><span>4</span> Quando alguém nos pede um conselho, qual deve ser nossa primeira reação? Talvez você se sinta tão feliz que essa pessoa confia em você que já queira ir logo ajudando. Mas primeiro devemos nos perguntar: ‘Será que eu sou a pessoa certa para dar um conselho sobre esse assunto?’ Às vezes, a melhor forma de ajudar é não dar o conselho, mas sim direcionar a pessoa para alguém que conheça melhor o assunto.</p>
+
+<p class="paragrafo"><span>5</span> Por exemplo, imagine que um amigo bem próximo descubra que tem um problema sério de saúde. Daí ele fala que começou a pesquisar sobre as opções de tratamento e pede sua opinião sobre qual escolher. Talvez você ache que um tratamento é melhor do que os outros, mas você não tem qualificações médicas ou treinamento para tratar essa doença. Se esse for o caso, a melhor coisa que você pode fazer pelo seu amigo é ajudá-lo a encontrar alguém qualificado para dar a ajuda que ele precisa.</p>
+
+<div><p class="pergunta"><span>6.</span> O que é bom fazer antes de dar um conselho?</p></div>
+
+<p class="paragrafo"><span>6</span> Mesmo que você ache que tem condições de dar um bom conselho sobre determinado assunto, talvez seja bom esperar um tempo antes de responder a pessoa que está pedindo conselho. Por quê? <a class="bbl">Pro. 15:28</a> diz que o “justo medita antes de responder”. Mas e se você acha que já sabe a resposta? Mesmo assim, é bom tirar um tempo para pesquisar, orar e meditar. Assim, você vai estar mais confiante de que sua resposta está de acordo com o que Jeová pensa sobre o assunto. Veja, por exemplo, o que aconteceu com o profeta Natã.</p>
+
+<div><p class="pergunta"><span>7.</span> O que aprendemos com o que aconteceu com o profeta Natã?</p></div>
+
+<p class="paragrafo"><span>7</span> Ao falar com o profeta Natã, o rei Davi disse que queria construir um templo para Jeová. Imediatamente Natã concordou que essa era uma boa decisão. Mas ele devia primeiro ter tirado tempo para perguntar a Jeová o que ele pensava. Por quê? Porque Jeová não queria que Davi construísse o templo. (<a class="bbl">1 Crô. 17:1-4</a>) Esse exemplo mostra que, quando alguém nos pede um conselho, a coisa sábia a fazer é “demorar para falar”. — <a class="bbl">Tia. 1:19</a>.</p>
+
+<div><p class="pergunta"><span>8.</span> Que outro motivo temos para tomar cuidado antes de dar um conselho?</p></div>
+
+<p class="paragrafo"><span>8</span> Pense em outro motivo que temos para tomar cuidado antes de dar um conselho para alguém. Imagine que depois do nosso conselho alguém tome uma decisão que tenha consequências ruins. Parte da responsabilidade poderia ser nossa. Com certeza temos bons motivos para pensar bem antes de dar um conselho.</p>
+
+<h2 class="subtitulo">Ao dar um conselho que não foi pedido</h2>
+
+<div><p class="pergunta"><span>9.</span> Antes de dar um conselho, que certeza os anciãos precisam ter? (<a class="bbl">Gál. 6:1</a>)</p></div>
+
+<p class="paragrafo"><span>9</span> De vez em quando, os anciãos precisam tomar a iniciativa e dar conselho a um irmão ou uma irmã que deu “um passo em falso”. (<strong>Leia <a class="bbl">Gál. 6:1</a>.</strong>) Uma nota de estudo desse versículo diz que a pessoa que deu um passo em falso “está indo na direção errada, mesmo que ainda não tenha cometido um pecado grave”. Então, o objetivo dos anciãos é ajudar essa pessoa a continuar na estrada que leva à vida eterna. (<a class="bbl">Tia. 5:19, 20</a>) Mas para que o conselho seja útil, primeiro os anciãos precisam ter certeza de que a pessoa realmente deu um passo em falso. Isso porque o fato de que a pessoa tomou uma decisão diferente não significa necessariamente que a decisão dela está desagradando a Jeová. (<a class="bbl">Rom. 14:1-4</a>) Mas e se os anciãos concluírem que um irmão realmente deu um passo em falso e que é necessário dar um conselho? Como eles podem fazer isso?</p>
+
+<div><p class="pergunta"><span>10-12.</span> O que os anciãos precisam fazer quando forem dar um conselho que não foi pedido? Ilustre. (Veja também as imagens.)</p></div>
+
+<p class="paragrafo"><span>10</span> Pode ser um desafio para os anciãos dar um conselho que não foi pedido. Por quê? O apóstolo Paulo disse que uma pessoa talvez não perceba que precisa de conselho. Então, a primeira coisa que os anciãos devem fazer é preparar a pessoa para receber o conselho.</p>
+
+<p class="paragrafo"><span>11</span> Dar um conselho que não foi pedido pode ser como cultivar uma planta em um solo duro. Antes de tudo, um agricultor precisa arar a terra. Assim, a terra vai ficar mais macia e preparada para receber a semente. Finalmente, o agricultor planta a semente e depois rega para ajudá-la a crescer. Da mesma forma, antes de dar um conselho que não foi pedido, um ancião precisa preparar o solo, por assim dizer. Por exemplo, ele espera um momento apropriado e diz ao irmão que se importa muito com ele e que gostaria de falar sobre um assunto. Se a pessoa que dá o conselho for conhecida por ser amorosa e bondosa, vai ser mais fácil para outros aceitarem os conselhos dela.</p>
+
+<p class="paragrafo"><span>12</span> Durante a conversa, o ancião continua amaciando o solo por relembrar que todos cometem erros e precisam de conselhos de vez em quando. (<a class="bbl">Rom. 3:23</a>) Com uma voz bem calma e profundo respeito, o ancião usa a Bíblia para mostrar de maneira clara ao irmão qual foi o passo em falso que ele deu. Depois que o irmão reconhece que cometeu um erro, o ancião planta a semente por explicar de maneira simples o que esse irmão precisa fazer para corrigir a situação. Por fim, o ancião rega a semente por destacar as coisas boas que esse irmão tem feito e orar com ele. — <a class="bbl">Tia. 5:15</a>.</p>
+
+<div class="imagem1"></div>
+
+<div><p class="pergunta"><span>13.</span> Como os anciãos podem ter certeza de que a pessoa entendeu o conselho?</p></div>
+
+<p class="paragrafo"><span>13</span> Às vezes, o que uma pessoa <strong><em>diz</em></strong> e o que outra pessoa <strong><em>entende</em></strong> são duas coisas diferentes. Como os anciãos podem evitar que isso aconteça quando forem dar um conselho? De maneira bondosa, eles podem fazer perguntas para ver se a pessoa entendeu o conselho e o que ela precisa fazer para aplicá-lo. — <a class="bbl">Ecl. 12:11</a>.</p>
+
+<h2 class="subtitulo">Dar o conselho no momento certo e da maneira certa</h2>
+
+<div><p class="pergunta"><span>14.</span> Por que não devemos dar um conselho quando estamos com raiva?</p></div>
+
+<p class="paragrafo"><span>14</span> Todos nós somos imperfeitos, então uma hora ou outra vamos fazer ou dizer alguma coisa que magoe outros. (<a class="bbl">Col. 3:13</a>) A Bíblia até reconhece que podemos ficar ou deixar outros irados. (<a class="bbl">Efé. 4:26</a>) Mas precisamos resistir ao impulso de dar um conselho quando estamos com raiva. Por quê? Porque “a ira do homem não produz a justiça de Deus”. (<a class="bbl">Tia. 1:20</a>) Se damos um conselho quando estamos com raiva, podemos acabar piorando a situação. Isso não significa que nunca devemos falar o que pensamos ou o que sentimos para a pessoa que nos deixou com raiva. Mas vamos conseguir nos expressar melhor se esperarmos para falar quando estivermos calmos. Podemos aprender com o exemplo de Eliú, que deu um bom conselho para Jó.</p>
+
+<div><p class="pergunta"><span>15.</span> O que aprendemos com o exemplo de Eliú? (Veja também a imagem.)</p></div>
+
+<p class="paragrafo"><span>15</span> Eliú passou dias ouvindo Jó se defender das acusações dos outros três homens. Eliú sentia compaixão por Jó. Mas, quando Jó ficou tentando provar sua inocência, ele acabou falando coisas sobre Jeová que não eram verdade. Por causa disso, Eliú ficou muito irado. Mesmo assim, ele esperou sua vez e daí falou de uma maneira calma e com muito respeito enquanto aconselhava Jó. (<a class="bbl">Jó 32:2; 33:1-7</a>) O exemplo de Eliú nos ensina uma lição importante: o momento certo de dar um conselho é quando estamos calmos, e a maneira certa é com respeito e amor. — <a class="bbl">Ecl. 3:1, 7</a>.</p>
+
+<div class="imagem2"></div>
+
+<h2 class="subtitulo">Continue a dar e aceitar conselho</h2>
+
+<div><p class="pergunta"><span>16.</span> Que lição aprendemos do <a class="bbl">Sal. 32:8</a>?</p></div>
+
+<p class="paragrafo"><span>16</span> O texto temático deste estudo diz que ‘Jeová nos aconselha com os olhos fixos em nós’. (<strong>Leia <a class="bbl">Sal. 32:8</a>.</strong>) Isso mostra que Jeová está sempre nos ajudando. Ele não só nos dá conselhos, mas também nos ajuda a aplicá-los. Esse é um belo exemplo para nós! Quando você tiver o privilégio de dar um conselho, imite a Jeová por continuar com os olhos fixos na pessoa, dando qualquer ajuda que ela precise para tomar decisões sábias.</p>
+
+<div><p class="pergunta"><span>17.</span> Por que é bom ter anciãos que nos dão conselhos específicos e baseados na Bíblia? (<a class="bbl">Isa. 32:1, 2</a>)</p></div>
+
+<p class="paragrafo"><span>17</span> Mais do que nunca, nós precisamos dar e receber bons conselhos. (<a class="bbl">2 Tim. 3:1</a>) Anciãos que dão conselhos específicos e baseados na Bíblia são “como correntes de água numa terra árida”. (<strong>Leia <a class="bbl">Isa. 32:1, 2</a>.</strong>) Um amigo nos diz o que <strong><em>precisamos ouvir</em></strong>, mesmo sabendo que talvez não seja o que a gente <strong><em>gostaria</em></strong> de ouvir. Isso é tão valioso como “maçãs de ouro em esculturas de prata”. (<a class="bbl">Pro. 25:11</a>) Então, queremos continuar desenvolvendo a sabedoria que precisamos para dar e receber bons conselhos.</p>
+
+<div class="secao-recapitulacao">
+  <hr class="linha-recapitulacao">
+  <h3 class="titulo-recapitulacao">DO QUE PRECISAMOS NOS LEMBRAR QUANDO ...</h3>
+  <ul class="lista-recapitulacao">
+          <li>alguém nos pede um conselho?</li>
+          <li>temos que dar um conselho que não foi pedido?</li>
+          <li>estamos com raiva?</li>
+  </ul>
+</div>
+
+<div class="secao-cantico">
+  <p><span class="cantico">CÂNTICO 109</span> <span class="cantico-titulo">Mostre amor de coração</span></p>
+</div>
+</main>
+</div>
+
+<div id="modal-biblia">
+    <div class="modal-biblia-content">
+        <span id="modal-biblia-fechar">×</span>
+        <div id="modal-biblia-corpo"></div>
     </div>
+</div>
 
-    <!-- Navbar Unificada -->
-    <script src="../navbar/navbar-unified.js"></script>
-    
-    <script>
-        // Detecta semana da URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const semana = urlParams.get('semana');
-        
-        if (semana) {
-            const [dia, mes] = semana.split('-');
-            document.getElementById('semana-display').textContent = `Semana: ${dia}/${mes}`;
-        } else {
-            document.getElementById('semana-display').textContent = 'Semana não especificada';
+<!-- Scripts do sistema clickable existente -->
+<script src="biblia/abrev.js"></script>
+<script src="biblia/scriptbbl.js"></script>
+<script src="clickable/cache.js"></script>
+<script src="clickable/agente_perguntas.js"></script>
+<script src="clickable/agente_recap.js"></script>
+<script src="clickable/agente-obj.js"></script>
+<script src="clickable/agente-modal/agente-modal.js"></script>
+<script src="clickable/clickable.js"></script>
+<script src="menu/menu.js"></script>
+<script src="mark.js"></script>
+<script src="imagem/semanas/22-09/ilust/ilust-universal.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js"></script>
+
+<!-- CORREÇÃO 1: ORDEM DOS SCRIPTS -->
+<!-- swiper-zoom.js vem ANTES de imagem.js -->
+<script src="imagem/swiper-zoom.js"></script>
+<script src="imagem.js"></script>
+
+<!-- Sistema de Sincronização e Navbar -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../save/config.js"></script>
+<script src="../save/supabase.js"></script>
+<script src="../navbar/navbar-unified.js"></script>
+<script src="../save/sentinela-sync.js"></script>
+
+<!-- O HTML DO MODAL DEVE ESTAR PRESENTE -->
+<div id="zoom-container" class="zoom-container">
+    <div class="zoom-header">
+        <button class="zoom-btn-fechar" aria-label="Fechar">×</button>
+    </div>
+    <div class="zoom-content"></div>
+    <div class="zoom-footer"></div>
+</div>
+
+<!-- CORREÇÃO 2: REMOÇÃO DA INICIALIZAÇÃO DUPLICADA -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // A linha "new ZoomModal();" foi REMOVIDA daqui, pois o próprio script já faz isso.
+    setTimeout(() => {
+        document.querySelectorAll('.paragrafo').forEach((p, index) => {
+            if (!p.id) p.id = `paragrafo-sentinela-${index + 1}`;
+        });
+        if (window.CacheAnotacao) {
+            document.querySelectorAll('.paragrafo, .comentarios, .clickable').forEach(el => {
+                if (el.id) {
+                    const cachedContent = window.CacheAnotacao.carregar(el.id);
+                    if (cachedContent) el.innerHTML = cachedContent;
+                }
+            });
         }
+        document.dispatchEvent(new CustomEvent('cacheRestored'));
+        if (window.UnifiedNavbar?.get()) {
+            window.UnifiedNavbar.get().setActivePage('watchtower');
+        }
+    }, 200);
+});
+</script>
 
-        // Define página ativa na navbar
-        setTimeout(() => {
-            if (window.UnifiedNavbar && window.UnifiedNavbar.get()) {
-                window.UnifiedNavbar.get().setActivePage('watchtower');
-            }
-        }, 200);
-    </script>
 </body>
 </html>
